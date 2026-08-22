@@ -18,10 +18,10 @@
   #ufwline { font-size:15px; color:#9fb1c3; }
   #ufwline b { color:#fff; }
 
-  /* Progress bar overlay */
+  /* Progress bar */
   #progress-wrap {
     background:#111; border:1px solid #333; border-radius:8px;
-    padding:10px 14px; margin-bottom:8px;
+    padding:10px 14px;
   }
   #progress-label {
     font-size:12px; color:#888; margin-bottom:6px;
@@ -40,7 +40,8 @@
     font-size:13px; color:#fff; font-weight:700; font-family:monospace;
   }
 
-  #ulog { width:100%; max-height:120px; overflow-y:auto; box-sizing:border-box;
+  /* Single unified log area */
+  #ulog { width:100%; max-height:140px; overflow-y:auto; box-sizing:border-box;
     background:#0c0f14; border:1px solid #2a3140; border-radius:12px;
     padding:10px 14px; font:12.5px/1.5 "Consolas","DejaVu Sans Mono",monospace;
     color:#b9e6b0; white-space:pre-wrap; }
@@ -49,6 +50,7 @@
   #ulog .info { color:#9fc7ff; }
   #ulog .success { color:#7fd88a; }
 
+  /* umtx2 console area - hidden until umtx2 starts, then replaces #ulog */
   #uchain { width:100%; box-sizing:border-box; }
   #uchain #console { width:100%; min-height:200px; box-sizing:border-box;
     background:#0c0f14; border:1px solid #2a3140; border-radius:12px; padding:12px 14px;
@@ -65,15 +67,11 @@
     position:fixed; top:0; left:0; width:100%; height:100%; border:0;
     z-index:1; opacity:0; pointer-events:none;
   }
-  /* Overlay covers iframe */
-  #overlay {
-    position:relative; z-index:100; background:#000;
-  }
+  #overlay { position:relative; z-index:100; background:#000; }
 </style>
 </head>
 <body>
 
-<!-- Hidden iframe for external chains -->
 <iframe id="extframe" sandbox="allow-scripts allow-same-origin"></iframe>
 
 <div id="overlay">
@@ -99,6 +97,7 @@
 
   <div id="ulog"></div>
   <div id="uchain"></div>
+
   <div id="ucredits">
     Exploit chains served as-is from their public hosts — all credits to the authors:<br>
     <b>umtx2</b> (fw 1.xx-5.xx): psfree by <b>abc</b>, uMTX2 kernel exploit by <b>shahrilnet</b> &amp; <b>n0llptr</b><br>
@@ -115,9 +114,11 @@
   var P2JB  = ["12.00","12.02","12.40","12.50","12.70"];
 
   var logEl = document.getElementById("ulog");
+  var uchainEl = document.getElementById("uchain");
   var progressFill = document.getElementById("progress-bar-fill");
   var progressPct = document.getElementById("progress-pct");
   var progressStatus = document.getElementById("progress-status");
+  var usingUchain = false;
 
   function log(msg, cls) {
     var d = new Date();
@@ -125,8 +126,23 @@
     var line = document.createElement("div");
     if (cls) line.className = cls;
     line.textContent = "["+t+"] "+msg;
+    if (usingUchain && uchainEl.firstChild) {
+      // umtx2 is running, try to write to its console
+      var consoleEl = document.getElementById("console");
+      if (consoleEl) {
+        consoleEl.appendChild(line);
+        consoleEl.scrollTop = consoleEl.scrollHeight;
+        return;
+      }
+    }
     logEl.appendChild(line);
     logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  function switchToUchain() {
+    usingUchain = true;
+    logEl.style.display = "none";
+    uchainEl.style.display = "block";
   }
 
   function setProgress(pct, status, cls) {
@@ -162,11 +178,140 @@
     return p;
   }
 
-  /* ===== umtx2: EXACT original code from mounirhero ===== */
+  /* ===== PAYLOADS ===== */
+  var PAYLOADS = [
+    { name: "shadowmountplus.elf", ghUrl: "https://github.com/drakmor/ShadowMountPlus/releases/download/1.6beta16/shadowmountplus.elf", local: "payload/shadowmountplus.elf" },
+    { name: "OnionHEN.elf", ghUrl: "https://github.com/aydencharles/onionHEN/releases/download/v0.0.10/OnionHEN.elf", local: "payload/OnionHEN.elf" }
+  ];
+
+  function fetchPayload(url) {
+    return new Promise(function(resolve){
+      var req = new XMLHttpRequest();
+      req.open("GET", url, true);
+      req.responseType = "arraybuffer";
+      req.onload = function(){
+        if(req.status === 200) resolve(req.response);
+        else resolve(null);
+      };
+      req.onerror = function(){ resolve(null); };
+      req.ontimeout = function(){ resolve(null); };
+      req.timeout = 15000;
+      req.send();
+    });
+  }
+
+  function sendOnePayload(bytes, name) {
+    return new Promise(function(resolve){
+      try {
+        if (typeof syscall !== "function") { log("syscalls not available", "err"); resolve(false); return; }
+        var fd = syscall("socket", 2, 1, 0);
+        if (fd < 0) { log("socket() failed: " + fd, "err"); resolve(false); return; }
+        var addr = new Uint8Array(16);
+        addr[0] = 0x10; addr[1] = 0x02;
+        addr[2] = (9021 >> 8) & 0xFF; addr[3] = 9021 & 0xFF;
+        addr[4] = 127; addr[5] = 0; addr[6] = 0; addr[7] = 1;
+        var conn = syscall("connect", fd, addr, 16);
+        if (conn < 0) { syscall("close", fd); log("connect() failed: " + conn, "err"); resolve(false); return; }
+        var u8 = new Uint8Array(bytes);
+        var sent = 0;
+        function writeChunk(){
+          if (sent >= u8.length) {
+            syscall("close", fd);
+            log(name + " sent successfully!", "success");
+            resolve(true);
+            return;
+          }
+          var end = Math.min(sent + 65536, u8.length);
+          var chunk = u8.subarray(sent, end);
+          var w = syscall("write", fd, chunk, chunk.length);
+          if (w < 0) { syscall("close", fd); log("write() failed: " + w, "err"); resolve(false); return; }
+          sent += w;
+          setTimeout(writeChunk, 0);
+        }
+        writeChunk();
+      } catch (e) {
+        log(name + " send failed: " + e.message, "err");
+        resolve(false);
+      }
+    });
+  }
+
+  function autoPayloadSequence() {
+    log("Starting auto-payload sequence...", "info");
+    setProgress(95, "sending payloads...");
+    var idx = 0;
+    function next(){
+      if (idx >= PAYLOADS.length) {
+        log("All payloads dispatched. Closing browser in 3s...", "success");
+        setProgress(100, "complete", "success");
+        setTimeout(function(){
+          try { window.open("","_self").close(); } catch(e){}
+          try { window.close(); } catch(e){}
+        }, 3000);
+        return;
+      }
+      var p = PAYLOADS[idx++];
+      log("Loading " + p.name + " ...");
+      fetchPayload(p.local).then(function(buf){
+        if (!buf) {
+          log("Local not found, trying GitHub ...", "warn");
+          return fetchPayload(p.ghUrl);
+        }
+        return buf;
+      }).then(function(buf){
+        if (!buf) {
+          log("Could not download " + p.name + ". Place it in " + p.local, "err");
+          next();
+          return;
+        }
+        log(p.name + " loaded (" + buf.byteLength + " bytes)");
+        return sendOnePayload(buf, p.name).then(function(){ next(); });
+      });
+    }
+    next();
+  }
+
+  function waitForElfldrThenPayload() {
+    log("Waiting for elfldr on 127.0.0.1:9021 ...");
+    setProgress(55, "waiting for elfldr...");
+    var attempts = 0;
+    function check(){
+      attempts++;
+      if (attempts > 60) {
+        log("elfldr did not come up in time", "warn");
+        setProgress(0, "elfldr timeout", "error");
+        return;
+      }
+      try {
+        if (typeof syscall === "function") {
+          var fd = syscall("socket", 2, 1, 0);
+          if (fd >= 0) {
+            var addr = new Uint8Array(16);
+            addr[0] = 0x10; addr[1] = 0x02;
+            addr[2] = (9021 >> 8) & 0xFF; addr[3] = 9021 & 0xFF;
+            addr[4] = 127; addr[5] = 0; addr[6] = 0; addr[7] = 1;
+            var conn = syscall("connect", fd, addr, 16);
+            syscall("close", fd);
+            if (conn >= 0) {
+              log("elfldr is up!", "success");
+              setProgress(90, "elfldr ready");
+              autoPayloadSequence();
+              return;
+            }
+          }
+        }
+      } catch (e) {}
+      setTimeout(check, 3000);
+    }
+    check();
+  }
+
+  /* ===== umtx2: EXACT original code ===== */
   function runUx() {
     log("loading umtx2 chain code...");
     setProgress(10, "loading umtx2...");
     setBase("ux/");
+    switchToUchain();
     document.getElementById("uchain").innerHTML =
       '<div id="toast-container" style="display:none"></div>' +
       '<span id="top-bar-text" style="display:none"></span>' +
@@ -183,6 +328,7 @@
         log("umtx2 loaded — running psfree + kernel exploit");
         setProgress(50, "running exploit...");
         run(false, false);
+        waitForElfldrThenPayload();
       })
       .catch(function (e) { log("umtx2 load failed: " + e.message, "err"); setProgress(0, "failed", "error"); });
   }
@@ -227,7 +373,6 @@
   var fwline = document.getElementById("ufwline");
   var armed = false;
 
-  // auto-resume after umtx2 crash-reload (CRITICAL - do not remove)
   var resume = null;
   try { resume = sessionStorage.getItem("on_load_autorun"); } catch (e) { }
 
@@ -257,14 +402,12 @@
     }, 1000);
   }
 
-  // auto-run after 1s
   if (chain && !forced) {
     setTimeout(function () {
       if (!armed) start(chain, name);
     }, 1000);
   }
 
-  // auto-resume after crash
   if (resume && !armed) {
     log("resuming umtx2 after browser reload (automatic retry)...", "warn");
     start("ux", "umtx2 (auto-resume)");

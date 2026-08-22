@@ -5,92 +5,81 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Unified WebKit Exploit — InsideMatrixDev</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body {
-    width: 100%; height: 100%;
-    background: #000; color: #e8e8e8;
-    font: 15px/1.4 "Segoe UI", system-ui, sans-serif;
-    overflow: hidden;
-  }
-  /* Overlay covers everything - user sees only black + our UI */
-  #overlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: #000; z-index: 100;
-    display: flex; flex-direction: column;
-    padding: 20px 16px 16px; gap: 12px;
-  }
-  #uhead {
-    display: flex; gap: 16px; align-items: center; justify-content: center; flex-wrap: wrap;
-    flex-shrink: 0;
-  }
-  #ulogo {
-    width: min(120px, 22vw); height: auto; border-radius: 10px; opacity: 0.9;
-  }
-  #uheadtxt { text-align: center; }
-  h1 { font-size: 20px; letter-spacing: 2px; font-weight: 800; color: #fff; }
-  #ubyline { font-size: 12px; color: #8fa0b3; margin-top: 2px; }
-  #ufwline { font-size: 14px; color: #9fb1c3; margin-top: 4px; }
-  #ufwline b { color: #fff; }
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; min-height:100%; background:#000; color:#e8e8e8;
+    font:16px/1.45 "Segoe UI", system-ui, sans-serif; }
+  #uwrap { min-height:100vh; box-sizing:border-box; padding:22px 16px 14px;
+    display:flex; flex-direction:column; gap:14px; }
+  #uhead { display:flex; gap:20px; align-items:center; justify-content:center; flex-wrap:wrap; }
+  #ulogo { width:min(210px, 34vw); border-radius:14px; flex:0 0 auto; }
+  #uheadtxt { display:flex; flex-direction:column; gap:8px; min-width:min(420px, 90vw); }
+  h1 { margin:0; font-size:22px; letter-spacing:2px; font-weight:800; color:#fff; }
+  #ubyline { font-size:14px; color:#8fa0b3; }
+  #ufwline { font-size:15px; color:#9fb1c3; }
+  #ufwline b { color:#fff; }
 
-  /* Progress bar - fixed on screen */
+  /* Progress bar overlay */
   #progress-wrap {
-    flex-shrink: 0;
-    background: #111; border: 1px solid #333; border-radius: 8px;
-    padding: 10px 14px;
+    background:#111; border:1px solid #333; border-radius:8px;
+    padding:10px 14px; margin-bottom:8px;
   }
   #progress-label {
-    font-size: 12px; color: #888; margin-bottom: 6px;
-    display: flex; justify-content: space-between;
+    font-size:12px; color:#888; margin-bottom:6px;
+    display:flex; justify-content:space-between;
   }
   #progress-bar-bg {
-    width: 100%; height: 10px; background: #222; border-radius: 5px; overflow: hidden;
+    width:100%; height:10px; background:#222; border-radius:5px; overflow:hidden;
   }
   #progress-bar-fill {
-    width: 0%; height: 100%; background: #4a90e2; border-radius: 5px;
-    transition: width 0.4s ease;
+    width:0%; height:100%; background:#4a90e2; border-radius:5px;
+    transition:width 0.4s ease;
   }
-  #progress-bar-fill.error { background: #e05561; }
-  #progress-bar-fill.success { background: #47c76a; }
+  #progress-bar-fill.error { background:#e05561; }
+  #progress-bar-fill.success { background:#47c76a; }
   #progress-pct {
-    font-size: 13px; color: #fff; font-weight: 700; font-family: monospace;
+    font-size:13px; color:#fff; font-weight:700; font-family:monospace;
   }
 
-  /* Log area */
-  #ulog {
-    flex: 1;
-    min-height: 0;
-    background: #0a0a0a; border: 1px solid #222; border-radius: 10px;
-    padding: 10px 12px;
-    font: 12px/1.5 "Consolas", "DejaVu Sans Mono", monospace;
-    color: #b9e6b0; white-space: pre-wrap; overflow-y: auto;
-  }
-  #ulog .err { color: #ff9a8a; }
-  #ulog .warn { color: #ffd479; }
-  #ulog .info { color: #9fc7ff; }
-  #ulog .success { color: #7fd88a; }
-  #ulog .stage { color: #ebcb8b; font-weight: 700; }
+  #ulog { width:100%; max-height:120px; overflow-y:auto; box-sizing:border-box;
+    background:#0c0f14; border:1px solid #2a3140; border-radius:12px;
+    padding:10px 14px; font:12.5px/1.5 "Consolas","DejaVu Sans Mono",monospace;
+    color:#b9e6b0; white-space:pre-wrap; }
+  #ulog .err { color:#ff9a8a; }
+  #ulog .warn { color:#ffd479; }
+  #ulog .info { color:#9fc7ff; }
+  #ulog .success { color:#7fd88a; }
 
-  #ucredits {
-    flex-shrink: 0;
-    font-size: 10px; color: #444; text-align: center; padding-top: 6px;
-  }
+  #uchain { width:100%; box-sizing:border-box; }
+  #uchain #console { width:100%; min-height:200px; box-sizing:border-box;
+    background:#0c0f14; border:1px solid #2a3140; border-radius:12px; padding:12px 14px;
+    font:13px/1.5 "Consolas","DejaVu Sans Mono",monospace; color:#b9e6b0; white-space:pre-wrap; }
+  #uchain #console .LOG-ERROR { color:#ff9a8a; }
+  #uchain #console .LOG-WARN { color:#ffd479; }
+  #uchain #console .LOG-SUCCESS { color:#7fd88a; }
+  #uchain #console .LOG-INFO { color:#9fc7ff; }
 
-  /* Hidden iframe - exploit engine runs here */
+  #ucredits { margin-top:auto; padding-top:10px; font-size:11.5px; color:#666; text-align:center; }
+
+  /* Hidden iframe for poops/p2jb */
   #extframe {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%; border: 0;
-    z-index: 1; opacity: 0; pointer-events: none;
+    position:fixed; top:0; left:0; width:100%; height:100%; border:0;
+    z-index:1; opacity:0; pointer-events:none;
+  }
+  /* Overlay covers iframe */
+  #overlay {
+    position:relative; z-index:100; background:#000;
   }
 </style>
 </head>
 <body>
 
-<!-- Exploit engine iframe (invisible) -->
+<!-- Hidden iframe for external chains -->
 <iframe id="extframe" sandbox="allow-scripts allow-same-origin"></iframe>
 
-<!-- User-visible overlay -->
 <div id="overlay">
+<div id="uwrap">
   <div id="uhead">
-    <img id="ulogo" src="logo.jpg" alt="PS5"/>
+    <img id="ulogo" src="logo.jpg" alt="WebKit Exploit"/>
     <div id="uheadtxt">
       <h1>UNIFIED WEBKIT EXPLOIT</h1>
       <div id="ubyline">by InsideMatrixDev</div>
@@ -109,10 +98,14 @@
   </div>
 
   <div id="ulog"></div>
-
+  <div id="uchain"></div>
   <div id="ucredits">
-    umtx2: abc, shahrilnet, n0llptr · poops/p2jb: soniciso1 · elfldr: john-tornblom
+    Exploit chains served as-is from their public hosts — all credits to the authors:<br>
+    <b>umtx2</b> (fw 1.xx-5.xx): psfree by <b>abc</b>, uMTX2 kernel exploit by <b>shahrilnet</b> &amp; <b>n0llptr</b><br>
+    <b>poops/p2jb</b> (fw 7.xx-12.70): <b>soniciso1</b><br>
+    <b>elfldr</b> by <b>john-tornblom / ps5-payload-dev</b>
   </div>
+</div>
 </div>
 
 <script>
@@ -142,11 +135,8 @@
     progressFill.style.width = pct + "%";
     progressPct.textContent = pct + "%";
     if(status) progressStatus.textContent = status;
-    if(cls) {
-      progressFill.className = cls;
-    } else {
-      progressFill.className = "";
-    }
+    if(cls) progressFill.className = cls;
+    else progressFill.className = "";
   }
 
   function has(list, fw) { for (var i=0;i<list.length;i++) if (list[i]===fw) return true; return false; }
@@ -172,147 +162,52 @@
     return p;
   }
 
-  /* -------- payload sender -------- */
-  var PAYLOADS = [
-    { name: "shadowmountplus.elf", ghUrl: "https://github.com/drakmor/ShadowMountPlus/releases/download/1.6beta16/shadowmountplus.elf", local: "payload/shadowmountplus.elf" },
-    { name: "OnionHEN.elf", ghUrl: "https://github.com/aydencharles/onionHEN/releases/download/v0.0.10/OnionHEN.elf", local: "payload/OnionHEN.elf" }
-  ];
-
-  async function fetchPayload(url) {
-    try {
-      var r = await fetch(url, {cache:"no-store"});
-      if (!r.ok) return null;
-      return await r.arrayBuffer();
-    } catch (e) { return null; }
-  }
-
-  async function sendOnePayload(bytes, name) {
-    try {
-      if (typeof syscall !== "function") throw new Error("syscalls not available");
-      var fd = syscall("socket", 2, 1, 0);
-      if (fd < 0) throw new Error("socket() failed: " + fd);
-      var addr = new Uint8Array(16);
-      addr[0] = 0x10; addr[1] = 0x02;
-      addr[2] = (9021 >> 8) & 0xFF; addr[3] = 9021 & 0xFF;
-      addr[4] = 127; addr[5] = 0; addr[6] = 0; addr[7] = 1;
-      var conn = syscall("connect", fd, addr, 16);
-      if (conn < 0) { syscall("close", fd); throw new Error("connect() failed: " + conn); }
-      var u8 = new Uint8Array(bytes);
-      var sent = 0;
-      while (sent < u8.length) {
-        var chunk = u8.subarray(sent, Math.min(sent + 65536, u8.length));
-        var w = syscall("write", fd, chunk, chunk.length);
-        if (w < 0) { syscall("close", fd); throw new Error("write() failed: " + w); }
-        sent += w;
-      }
-      syscall("close", fd);
-      log(name + " sent successfully!", "success");
-      return true;
-    } catch (e) {
-      log(name + " send failed: " + e.message, "err");
-      return false;
-    }
-  }
-
-  async function autoPayloadSequence() {
-    log("Starting auto-payload sequence...", "info");
-    setProgress(95, "sending payloads...");
-    for (var i = 0; i < PAYLOADS.length; i++) {
-      var p = PAYLOADS[i];
-      log("Loading " + p.name + " ...");
-      var buf = await fetchPayload(p.local);
-      if (!buf) {
-        log("Local not found, trying GitHub ...", "warn");
-        buf = await fetchPayload(p.ghUrl);
-      }
-      if (!buf) {
-        log("Could not download " + p.name + ". Place it in " + p.local, "err");
-        continue;
-      }
-      log(p.name + " loaded (" + buf.byteLength + " bytes)");
-      await sendOnePayload(buf, p.name);
-      await new Promise(function(r){ setTimeout(r, 2000); });
-    }
-    log("All payloads dispatched. Closing browser in 3s...", "success");
-    setProgress(100, "complete", "success");
-    setTimeout(function(){
-      try { window.open("","_self").close(); } catch(e){}
-      try { window.close(); } catch(e){}
-    }, 3000);
-  }
-
-  async function waitForElfldrThenPayload() {
-    log("Waiting for elfldr on 127.0.0.1:9021 ...");
-    setProgress(90, "waiting for elfldr...");
-    for (var i = 0; i < 60; i++) {
-      try {
-        if (typeof syscall === "function") {
-          var fd = syscall("socket", 2, 1, 0);
-          if (fd >= 0) {
-            var addr = new Uint8Array(16);
-            addr[0] = 0x10; addr[1] = 0x02;
-            addr[2] = (9021 >> 8) & 0xFF; addr[3] = 9021 & 0xFF;
-            addr[4] = 127; addr[5] = 0; addr[6] = 0; addr[7] = 1;
-            var conn = syscall("connect", fd, addr, 16);
-            syscall("close", fd);
-            if (conn >= 0) {
-              log("elfldr is up!", "success");
-              await autoPayloadSequence();
-              return;
-            }
-          }
-        }
-      } catch (e) {}
-      await new Promise(function(r){ setTimeout(r, 3000); });
-    }
-    log("elfldr did not come up in time", "warn");
-    setProgress(0, "elfldr timeout", "error");
-  }
-
-  /* -------- umtx2 inline (1.xx-5.xx) -------- */
+  /* ===== umtx2: EXACT original code from mounirhero ===== */
   function runUx() {
     log("loading umtx2 chain code...");
     setProgress(10, "loading umtx2...");
     setBase("ux/");
+    document.getElementById("uchain").innerHTML =
+      '<div id="toast-container" style="display:none"></div>' +
+      '<span id="top-bar-text" style="display:none"></span>' +
+      '<div id="main-content">' +
+      '<div id="pre-jb-view" class="selected" style="display:none"></div>' +
+      '<div id="console-view"><div id="console" class="log"></div></div>' +
+      '<div id="payloads-view" style="display:none"></div></div>';
     window.alert = function (m) { log("alert: " + m, "warn"); };
     window.confirm = function (m) { log("confirm: " + m + " -> no", "warn"); return false; };
     return loadSeq(["int64.js", "rop.js", "main.js", "umtx2.js", "custom_host_stuff.js", "syscalls.js"])
       .then(function () { return loadJs("psfree/psfree.js", true); })
       .then(function () { return loadJs("payload_map.js", false); })
       .then(function () {
-        log("umtx2 loaded — running exploit");
+        log("umtx2 loaded — running psfree + kernel exploit");
         setProgress(50, "running exploit...");
         run(false, false);
-        waitForElfldrThenPayload();
       })
-      .catch(function (e) { log("umtx2 failed: " + e.message, "err"); setProgress(0, "failed", "error"); });
+      .catch(function (e) { log("umtx2 load failed: " + e.message, "err"); setProgress(0, "failed", "error"); });
   }
 
-  /* -------- external chain via hidden iframe (7.xx-12.70) -------- */
+  /* ===== poops/p2jb via hidden iframe ===== */
   function runExt(url, name) {
     log("loading " + name + " chain...");
     setProgress(5, "loading " + name + "...");
     var frame = document.getElementById("extframe");
     frame.src = url;
-
-    // Listen for logs from iframe bridge
     window.addEventListener("message", function onMsg(e){
       if (!e.data || !e.data.bridgeType) return;
       var d = e.data;
       if (d.bridgeType === "log" || d.bridgeType === "stage" || d.bridgeType === "early") {
-        log("[" + (d.chain||"ext") + "] " + (d.text || d.msg || d.item || ""), d.bridgeType==="stage"?"stage":"info");
+        log("[" + (d.chain||"ext") + "] " + (d.text || d.msg || d.item || ""), d.bridgeType==="stage"?"info":"info");
         if (d.progress > 0) setProgress(d.progress, (d.text || d.msg || "").slice(0, 40));
         if (d.progress === -1) setProgress(0, "error", "error");
       } else if (d.bridgeType === "error" || d.bridgeType === "rejection") {
         log("[" + (d.chain||"ext") + "] ERROR: " + (d.msg||""), "err");
         setProgress(0, "error", "error");
-      } else if (d.bridgeType === "ready") {
-        log("[" + (d.chain||"ext") + "] bridge ready");
       }
     });
   }
 
-  /* -------- firmware routing & auto-run -------- */
+  /* ===== firmware routing ===== */
   log("unified webkit exploit ready");
   setProgress(0, "detecting firmware...");
   var ua = navigator.userAgent;
@@ -331,6 +226,10 @@
 
   var fwline = document.getElementById("ufwline");
   var armed = false;
+
+  // auto-resume after umtx2 crash-reload (CRITICAL - do not remove)
+  var resume = null;
+  try { resume = sessionStorage.getItem("on_load_autorun"); } catch (e) { }
 
   if (!fw && !forced) {
     fwline.innerHTML = "<b>not a PS5 browser</b> — firmware not detected";
@@ -358,11 +257,17 @@
     }, 1000);
   }
 
-  /* auto-run after 1s if supported */
+  // auto-run after 1s
   if (chain && !forced) {
     setTimeout(function () {
       if (!armed) start(chain, name);
     }, 1000);
+  }
+
+  // auto-resume after crash
+  if (resume && !armed) {
+    log("resuming umtx2 after browser reload (automatic retry)...", "warn");
+    start("ux", "umtx2 (auto-resume)");
   }
 })();
 </script>

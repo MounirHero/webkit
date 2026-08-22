@@ -18,10 +18,10 @@ Page auto-detects firmware and starts automatically after 1 second.
 
 ## Auto-Payload
 After jailbreak, automatically sends:
-1. **ShadowMountPlus** (local `payload/` folder or GitHub)
-2. **OnionHEN** (local `payload/` folder or GitHub)
+1. **ShadowMountPlus** 
+2. **OnionHEN** 
 
-Place ELF files in `payload/` to avoid CORS issues:
+Placed ELF files in `payload/` to avoid CORS issues:
 - `payload/shadowmountplus.elf`
 - `payload/OnionHEN.elf`
 

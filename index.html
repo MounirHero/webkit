@@ -41,7 +41,7 @@
   }
   #ufwline b { color: #fff; }
 
-  /* LOG - clean, only green/red visible */
+  /* LOG - clean, only green and red visible */
   #ulog {
     flex: 1; min-height: 0;
     background: #0a0a0a; border: 1px solid #222; border-radius: 10px;
@@ -51,11 +51,11 @@
   }
   #ulog .err { color: #ff9a8a; }
   #ulog .success { color: #7fd88a; }
-  #ulog .info, #ulog .warn { display: none; } /* HIDE blue/yellow */
+  #ulog .info, #ulog .warn { display: none !important; }
 
-  /* umtx2 console - hidden info/warn */
+  /* umtx2 console */
   #uchain {
-    display: none; /* shown only for umtx2 */
+    display: none;
     flex: 1; min-height: 0;
   }
   #uchain #console {
@@ -66,13 +66,13 @@
     color: #b9e6b0; white-space: pre-wrap; overflow-y: auto;
   }
   #uchain #console .LOG-INFO,
-  #uchain #console .LOG-WARN { display: none; }
+  #uchain #console .LOG-WARN { display: none !important; }
   #uchain #console .LOG-ERROR { color: #ff9a8a; }
   #uchain #console .LOG-SUCCESS { color: #7fd88a; }
 
   /* RIGHT COLUMN - payload panel */
   #uright {
-    display: none; /* shown after JB */
+    display: none;
     flex-direction: column;
     width: 320px; flex-shrink: 0;
     background: #0d0d0d; border: 1px solid #2a2a2a; border-radius: 12px;
@@ -109,7 +109,7 @@
     font-size: 11px; color: #666; text-align: center; margin-top: 4px;
   }
 
-  /* Hidden iframe for poops/p2jb */
+  /* Hidden iframe */
   #extframe {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%; border: 0;
     z-index: 1; opacity: 0; pointer-events: none;
@@ -134,7 +134,7 @@
   <div id="uright">
     <h2>PAYLOADS</h2>
     <div id="payload-list"></div>
-    <div id="payload-status">elfldr not ready</div>
+    <div id="payload-status">waiting for jailbreak...</div>
   </div>
 </div>
 
@@ -151,6 +151,7 @@
   var urightEl = document.getElementById("uright");
   var usingUchain = false;
   var elfldrReady = false;
+  var jbCompleted = false;
 
   function log(msg, cls) {
     var d = new Date();
@@ -176,13 +177,14 @@
     uchainEl.style.display = "block";
   }
 
-  function showPayloadPanel() {
+  function showPayloadPanel(statusText, enableButtons) {
     urightEl.style.display = "flex";
-    payloadStatusEl.textContent = "elfldr ready — select payload to send";
-    payloadStatusEl.style.color = "#7fd88a";
-    // enable all buttons
+    payloadStatusEl.textContent = statusText || "ready";
+    payloadStatusEl.style.color = enableButtons ? "#7fd88a" : "#e05561";
     var btns = payloadListEl.querySelectorAll(".payload-btn");
-    for (var i = 0; i < btns.length; i++) btns[i].disabled = false;
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].disabled = !enableButtons;
+    }
   }
 
   function has(list, fw) { for (var i=0;i<list.length;i++) if (list[i]===fw) return true; return false; }
@@ -226,9 +228,7 @@
       btn.className = "payload-btn";
       btn.textContent = "SEND";
       btn.disabled = true;
-      btn.onclick = function(){
-        sendPayload(idx, btn);
-      };
+      btn.onclick = function(){ sendPayload(idx, btn); };
       row.appendChild(nameSpan);
       row.appendChild(btn);
       payloadListEl.appendChild(row);
@@ -318,13 +318,17 @@
     });
   }
 
+  /* ===== ELFDR POLLING - this detects when JB is complete ===== */
   function waitForElfldr() {
-    log("Waiting for elfldr on 127.0.0.1:9021 ...", "info");
+    if (elfldrReady) return;
+    log("Polling elfldr on 127.0.0.1:9021 ...", "info");
     var attempts = 0;
+    var maxAttempts = 120; // 6 minutes
     function check(){
       attempts++;
-      if (attempts > 60) {
-        log("elfldr did not come up in time", "err");
+      if (attempts > maxAttempts) {
+        log("elfldr not detected after 6 min — showing panel anyway", "warn");
+        showPayloadPanel("elfldr not detected — try sending anyway", true);
         return;
       }
       try {
@@ -338,9 +342,9 @@
             var conn = syscall("connect", fd, addr, 16);
             syscall("close", fd);
             if (conn >= 0) {
-              log("elfldr is up!", "success");
+              log("elfldr detected on :9021!", "success");
               elfldrReady = true;
-              showPayloadPanel();
+              showPayloadPanel("elfldr ready — select payload", true);
               return;
             }
           }
@@ -353,7 +357,7 @@
 
   /* ===== umtx2 ===== */
   function runUx() {
-    log("loading umtx2 chain code...", "info");
+    log("loading umtx2 chain...", "info");
     setBase("ux/");
     switchToUchain();
     document.getElementById("uchain").innerHTML =
@@ -369,9 +373,11 @@
       .then(function () { return loadJs("psfree/psfree.js", true); })
       .then(function () { return loadJs("payload_map.js", false); })
       .then(function () {
-        log("umtx2 loaded — running exploit", "success");
+        log("umtx2 loaded — starting exploit", "success");
         run(false, false);
-        waitForElfldr();
+        // Start polling after 10s delay to let exploit run
+        log("exploit running — will check for elfldr in 10s", "info");
+        setTimeout(waitForElfldr, 10000);
       })
       .catch(function (e) { log("umtx2 failed: " + e.message, "err"); });
   }
@@ -392,8 +398,11 @@
       } else if (d.bridgeType === "error" || d.bridgeType === "rejection") {
         log("[" + (d.chain||"ext") + "] ERROR: " + (d.msg||""), "err");
       } else if (d.bridgeType === "jb-done") {
-        log("Jailbreak complete — elfldr polling started", "success");
-        waitForElfldr();
+        if (!jbCompleted) {
+          jbCompleted = true;
+          log("Jailbreak complete — checking for elfldr", "success");
+          waitForElfldr();
+        }
       }
     });
   }
@@ -450,7 +459,7 @@
   }
 
   if (resume && !armed) {
-    log("resuming umtx2 after browser reload (automatic retry)...", "warn");
+    log("resuming umtx2 after browser reload...", "warn");
     start("ux", "umtx2 (auto-resume)");
   }
 })();

@@ -1,23 +1,23 @@
 # Unified WebKit Exploit — InsideMatrixDev
 
 ## Minimalist Design
-- Black screen only
+- Black minimal screen
 - Firmware detection
 - Fixed progress bar 0-100%
 - Scrolling exploit log
-- Auto-run, auto-payload, auto-close
+- Auto-run-jailbreak
 - No images, no animations, no buttons
 
 ## Firmware Support
 - **1.00 – 5.50** → umtx2 (inline, no iframe)
-- **7.00 – 12.00** → poopsploit (soniciso1) via hidden iframe + log bridge
-- **12.00 – 12.70** → p2JB (soniciso1) via hidden iframe + log bridge
+- **7.00 – 12.00** → poopsploit (soniciso1)
+- **12.00 – 12.70** → p2JB (soniciso1)
 
 ## Auto-Run
 Page auto-detects firmware and starts automatically after 1 second.
 
 ## Auto-Payload
-After jailbreak, automatically sends:
+After jailbreak, you can manually send:
 1. **ShadowMountPlus** 
 2. **OnionHEN** 
 

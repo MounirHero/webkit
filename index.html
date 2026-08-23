@@ -15,7 +15,7 @@
   #uwrap {
     display: flex; flex-direction: column;
     width: 100%; height: 100%;
-    padding: 16px; gap: 12px;
+    padding: 12px; gap: 10px;
   }
 
   /* TOP ROW */
@@ -26,21 +26,21 @@
   }
   #uhead {
     display: flex; flex-direction: row;
-    align-items: center; gap: 14px;
+    align-items: center; gap: 12px;
   }
   #ulogo {
-    width: min(100px, 15vw); height: auto;
-    border-radius: 10px;
+    width: min(80px, 12vw); height: auto;
+    border-radius: 8px;
   }
   #uheadtxt { display: flex; flex-direction: column; gap: 2px; }
-  #ubyline { font-size: 12px; color: #8fa0b3; }
-  #ufwline { font-size: 13px; color: #9fb1c3; }
+  #ubyline { font-size: 11px; color: #8fa0b3; }
+  #ufwline { font-size: 12px; color: #9fb1c3; }
   #ufwline b { color: #fff; }
 
   #ujb {
-    padding: 14px 48px;
-    border-radius: 12px; background: #1a3a1a; border: 2px solid #2d5a2d;
-    color: #7fd88a; font-weight: 800; font-size: 18px; letter-spacing: 2px;
+    padding: 10px 36px;
+    border-radius: 10px; background: #1a3a1a; border: 2px solid #2d5a2d;
+    color: #7fd88a; font-weight: 800; font-size: 16px; letter-spacing: 2px;
     cursor: pointer; text-decoration: none;
   }
   #ujb:hover { background: #224422; }
@@ -54,46 +54,49 @@
 
   /* MIDDLE: payload grid */
   #upayloads {
-    flex: 1; min-height: 0;
+    flex: 1;
+    min-height: 0;
     display: flex; flex-direction: column;
     background: #0a0a0a; border: 1px solid #222; border-radius: 10px;
-    padding: 10px; gap: 6px;
-    overflow-y: auto;
+    padding: 8px; gap: 6px;
+    overflow: hidden;
   }
   #upayloads-header {
     display: flex; justify-content: space-between; align-items: center;
+    flex-shrink: 0;
   }
   #upayloads h3 {
-    font-size: 13px; color: #888; letter-spacing: 1px;
+    font-size: 12px; color: #888; letter-spacing: 1px;
   }
   #refresh-payloads {
     background: #1a1a3a; color: #9fc7ff; border: 1px solid #2d3a5a;
-    border-radius: 4px; padding: 4px 10px;
+    border-radius: 4px; padding: 3px 8px;
     font-size: 10px; font-weight: 700; cursor: pointer;
   }
   #refresh-payloads:hover { background: #22224a; }
   #payload-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
+    gap: 5px;
+    overflow-y: auto;
   }
   .payload-slot {
     display: flex; align-items: center; justify-content: space-between;
     background: #111; border: 1px solid #2a2a2a; border-radius: 6px;
-    padding: 6px 10px; min-height: 36px;
+    padding: 5px 8px; min-height: 32px;
   }
   .payload-slot.empty {
-    opacity: 0.3;
+    opacity: 0.25;
   }
   .payload-slot-name {
-    font-size: 11px; color: #aaa; font-family: monospace;
+    font-size: 10px; color: #aaa; font-family: monospace;
     word-break: break-all; line-height: 1.3;
   }
   .payload-slot-btn {
     background: #1a3a1a; color: #7fd88a; border: 1px solid #2d5a2d;
-    border-radius: 4px; padding: 4px 10px;
-    font-size: 10px; font-weight: 700; cursor: pointer;
-    white-space: nowrap; margin-left: 6px; flex-shrink: 0;
+    border-radius: 4px; padding: 3px 8px;
+    font-size: 9px; font-weight: 700; cursor: pointer;
+    white-space: nowrap; margin-left: 4px; flex-shrink: 0;
   }
   .payload-slot-btn:hover { background: #224422; }
   .payload-slot-btn:disabled {
@@ -103,20 +106,31 @@
     background: #1a2a3a; color: #9fc7ff; border-color: #2d4a5a;
   }
 
-  /* BOTTOM: log */
-  #ulog {
+  /* BOTTOM: log - FIXED HEIGHT, never grows */
+  #ulog, #uchain {
     flex-shrink: 0;
-    height: 140px;
+    height: 120px;
     background: #0a0a0a; border: 1px solid #222; border-radius: 10px;
-    padding: 8px 10px;
-    font: 11px/1.4 "Consolas", "DejaVu Sans Mono", monospace;
+    padding: 6px 8px;
+    font: 11px/1.3 "Consolas", "DejaVu Sans Mono", monospace;
     color: #b9e6b0; white-space: pre-wrap; overflow-y: auto;
   }
   #ulog .err { color: #ff9a8a; }
   #ulog .success { color: #7fd88a; }
   #ulog .info, #ulog .warn { display: none !important; }
 
-  #uchain { display: none; }
+  #uchain {
+    display: none;
+  }
+  #uchain #console {
+    width: 100%; height: 100%;
+    font: 11px/1.3 "Consolas", "DejaVu Sans Mono", monospace;
+    color: #b9e6b0; white-space: pre-wrap; overflow-y: auto;
+  }
+  #uchain #console .LOG-INFO,
+  #uchain #console .LOG-WARN { display: none !important; }
+  #uchain #console .LOG-ERROR { color: #ff9a8a; }
+  #uchain #console .LOG-SUCCESS { color: #7fd88a; }
 
   #extframe {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%; border: 0;
@@ -200,57 +214,42 @@
 
   function has(list, fw) { for (var i=0;i<list.length;i++) if (list[i]===fw) return true; return false; }
 
-  /* ===== AUTO-DISCOVER PAYLOADS ===== */
+  /* ===== AUTO-DISCOVER PAYLOADS via HEAD probe ===== */
+  var PAYLOAD_CANDIDATES = [
+    "shadowmountplus.elf", "OnionHEN.elf",
+    "PS5-Game-Compressor_v1.0.4.elf", "PoorDS4rc38_v0.1.0-rc38.elf",
+    "etaHEN-2.6B.bin", "etaHEN_v2.5B.bin",
+    "ftpsrv_drakmor_v1.6-ng-test2.elf", "garlic-savemgr_v1.13.elf",
+    "kstuff-lite_EchoStretch_v1.10.elf", "lapy_jb_daemon.elf",
+    "nanoDNS_v0.4.elf", "pegasus-dl_v1.7.0.elf",
+    "pldmgr_v0.5.1.elf", "ps5-app-dumper_v1.11.elf",
+    "ps5-fan-control_v0.3.elf", "ps5-linux-loader_v2.4.elf",
+    "ps5-wallpaper-modd_v1.0.elf",
+    "elfldr.elf", "ftpsrv.elf", "kstuff.elf", "etaHEN.elf",
+    "ps5debug.elf", "orbisdev.elf", "linux-loader.elf",
+    "linux-1gb.elf", "linux-2gb.elf", "linux-3gb.elf", "linux-4gb.elf",
+    "payload1.elf", "payload2.elf", "payload3.elf", "test.elf"
+  ];
+
   function discoverPayloads() {
     return new Promise(function(resolve){
-      // Try to load payload/payloads.json (user-created list)
-      var req = new XMLHttpRequest();
-      req.open("GET", "payload/payloads.json", true);
-      req.onload = function(){
-        if (req.status === 200) {
-          try {
-            var data = JSON.parse(req.responseText);
-            if (Array.isArray(data) && data.length > 0) {
-              PAYLOADS = data.slice(0, 18);
-              log("loaded " + PAYLOADS.length + " payloads from payload/payloads.json", "success");
-              resolve();
-              return;
-            }
-          } catch(e) {}
-        }
-        // Fallback: probe common payload names
-        probePayloads().then(resolve);
-      };
-      req.onerror = function(){ probePayloads().then(resolve); };
-      req.send();
-    });
-  }
-
-  function probePayloads() {
-    return new Promise(function(resolve){
-      var candidates = [
-        "shadowmountplus.elf", "OnionHEN.elf", "etaHEN.elf", "kstuff.elf",
-        "elfldr.elf", "ftpsrv.elf", "ps5debug.elf", "orbisdev.elf",
-        "linux-loader.elf", "linux-1gb.elf", "linux-2gb.elf", "linux-3gb.elf",
-        "linux-4gb.elf", "ps5-payload-sdk.elf", "prospero.elf", "test.elf",
-        "payload1.elf", "payload2.elf"
-      ];
       var found = [];
       var checked = 0;
-      candidates.forEach(function(name){
+      PAYLOAD_CANDIDATES.forEach(function(name){
         var r = new XMLHttpRequest();
         r.open("HEAD", "payload/" + name, true);
         r.onload = function(){
           checked++;
           if (r.status === 200) found.push({name: name, url: "payload/" + name});
-          if (checked >= candidates.length) {
-            PAYLOADS = found.slice(0, 18);
-            if (PAYLOADS.length > 0) log("auto-discovered " + PAYLOADS.length + " payloads in /payload/", "success");
-            else log("no payloads found in /payload/ — add .elf files or create payload/payloads.json", "warn");
+          if (checked >= PAYLOAD_CANDIDATES.length) {
+            PAYLOADS = found;
+            log("found " + PAYLOADS.length + " payloads in /payload/", "success");
             resolve();
           }
         };
-        r.onerror = function(){ checked++; if (checked >= candidates.length) { PAYLOADS = found.slice(0, 18); resolve(); } };
+        r.onerror = function(){ checked++; if (checked >= PAYLOAD_CANDIDATES.length) { PAYLOADS = found; resolve(); } };
+        r.ontimeout = function(){ checked++; if (checked >= PAYLOAD_CANDIDATES.length) { PAYLOADS = found; resolve(); } };
+        r.timeout = 5000;
         r.send();
       });
     });
@@ -259,7 +258,6 @@
   function buildPayloadGrid() {
     payloadGridEl.innerHTML = "";
     var slots = PAYLOADS.length > 0 ? PAYLOADS : [];
-    // Always show 18 slots
     for (var i = 0; i < 18; i++) {
       var p = slots[i] || {name: "", url: ""};
       var slot = document.createElement("div");
@@ -330,38 +328,34 @@
     });
   }
 
+  /* ===== SEND VIA HTTP POST TO ELFLDR ===== */
   function sendOnePayload(bytes, name) {
     return new Promise(function(resolve){
       try {
-        var sc = (typeof syscall === "function") ? syscall : (typeof window.syscall === "function") ? window.syscall : null;
-        if (!sc) { log("syscalls not available", "err"); resolve(false); return; }
-        var fd = sc("socket", 2, 1, 0);
-        if (fd < 0) { log("socket() failed: " + fd, "err"); resolve(false); return; }
-        var addr = new Uint8Array(16);
-        addr[0] = 0x10; addr[1] = 0x02;
-        addr[2] = (9021 >> 8) & 0xFF; addr[3] = 9021 & 0xFF;
-        addr[4] = 127; addr[5] = 0; addr[6] = 0; addr[7] = 1;
-        var conn = sc("connect", fd, addr, 16);
-        if (conn < 0) { sc("close", fd); log("connect() failed: " + conn, "err"); resolve(false); return; }
-        var u8 = new Uint8Array(bytes);
-        var sent = 0;
-        function writeChunk(){
-          if (sent >= u8.length) {
-            sc("close", fd);
-            log(name + " sent!", "success");
+        log("Sending " + name + " to elfldr :9021 ...", "info");
+        var req = new XMLHttpRequest();
+        req.open("POST", "http://127.0.0.1:9021/", true);
+        req.timeout = 30000;
+        req.onload = function(){
+          if (req.status === 200 || req.status === 0) {
+            log(name + " sent successfully!", "success");
             resolve(true);
-            return;
+          } else {
+            log(name + " send failed: HTTP " + req.status, "err");
+            resolve(false);
           }
-          var end = Math.min(sent + 65536, u8.length);
-          var chunk = u8.subarray(sent, end);
-          var w = sc("write", fd, chunk, chunk.length);
-          if (w < 0) { sc("close", fd); log("write() failed: " + w, "err"); resolve(false); return; }
-          sent += w;
-          setTimeout(writeChunk, 0);
-        }
-        writeChunk();
+        };
+        req.onerror = function(){
+          log(name + " send error (network)", "err");
+          resolve(false);
+        };
+        req.ontimeout = function(){
+          log(name + " send timeout", "err");
+          resolve(false);
+        };
+        req.send(bytes);
       } catch (e) {
-        log(name + " send failed: " + e.message, "err");
+        log(name + " send exception: " + e.message, "err");
         resolve(false);
       }
     });
@@ -391,6 +385,8 @@
   function runUx() {
     log("loading umtx2 chain...", "info");
     setBase("ux/");
+    // Switch log display
+    logEl.style.display = "none";
     uchainEl.style.display = "block";
     uchainEl.innerHTML =
       '<div id="toast-container" style="display:none"></div>' +
@@ -405,8 +401,8 @@
       .then(function () { return loadJs("psfree/psfree.js", true); })
       .then(function () { return loadJs("payload_map.js", false); })
       .then(function () {
-        log("umtx2 loaded — starting exploit NOW", "success");
-        run(false, false);  // <-- THIS WAS MISSING! Start the exploit
+        log("umtx2 loaded — starting exploit", "success");
+        run(false, false);
         watchConsoleForElfldr();
       })
       .catch(function (e) { log("umtx2 failed: " + e.message, "err"); });

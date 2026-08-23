@@ -18,14 +18,12 @@
     padding: 14px; gap: 12px;
   }
 
-  /* TOP SECTION: logo left | payload list right */
   #umain {
     display: flex; flex-direction: row;
     flex: 1; min-height: 0;
     gap: 14px;
   }
 
-  /* LEFT: logo + jb button */
   #uleft {
     display: flex; flex-direction: column;
     align-items: center; gap: 12px;
@@ -36,12 +34,8 @@
     border-radius: 12px;
     border: 1px solid #333;
   }
-  #ubyline {
-    font-size: 15px; color: #8fa0b3;
-  }
-  #ufwline {
-    font-size: 16px; color: #9fb1c3;
-  }
+  #ubyline { font-size: 15px; color: #8fa0b3; }
+  #ufwline { font-size: 16px; color: #9fb1c3; }
   #ufwline b { color: #fff; }
 
   #ujb {
@@ -49,26 +43,15 @@
     border-radius: 12px; background: #1a3a1a; border: 2px solid #2d5a2d;
     color: #7fd88a; font-weight: 800; font-size: 20px; letter-spacing: 2px;
     cursor: pointer; text-decoration: none;
-    width: 100%;
-    text-align: center;
+    width: 100%; text-align: center;
   }
   #ujb:hover { background: #224422; }
-  #ujb.disabled {
-    background: #1a1a1a; border-color: #333; color: #555;
-    cursor: not-allowed;
-  }
-  #ujb.running {
-    opacity: 0.6; cursor: wait;
-  }
-  #ujb.elfldr-ready {
-    background: #1a2a3a; border-color: #2d4a5a; color: #9fc7ff;
-    cursor: not-allowed;
-  }
+  #ujb.disabled { background: #1a1a1a; border-color: #333; color: #555; cursor: not-allowed; }
+  #ujb.running { opacity: 0.6; cursor: wait; }
+  #ujb.elfldr-ready { background: #1a2a3a; border-color: #2d4a5a; color: #9fc7ff; cursor: not-allowed; }
 
-  /* RIGHT: payload list (single column) */
   #uright {
-    flex: 1;
-    min-width: 0;
+    flex: 1; min-width: 0;
     display: flex; flex-direction: column;
     background: #0a0a0a; border: 1px solid #222; border-radius: 10px;
     padding: 10px; gap: 8px;
@@ -78,9 +61,7 @@
     display: flex; justify-content: space-between; align-items: center;
     flex-shrink: 0;
   }
-  #uright h3 {
-    font-size: 16px; color: #888; letter-spacing: 1px;
-  }
+  #uright h3 { font-size: 16px; color: #888; letter-spacing: 1px; }
   #refresh-payloads {
     background: #1a1a3a; color: #9fc7ff; border: 1px solid #2d3a5a;
     border-radius: 6px; padding: 6px 14px;
@@ -88,8 +69,7 @@
   }
   #refresh-payloads:hover { background: #22224a; }
   #payload-list {
-    display: flex;
-    flex-direction: column;
+    display: flex; flex-direction: column;
     gap: 6px;
     overflow-y: auto;
   }
@@ -98,28 +78,22 @@
     background: #111; border: 1px solid #2a2a2a; border-radius: 8px;
     padding: 10px 14px; min-height: 44px;
   }
-  .payload-item.empty {
-    opacity: 0.25;
-  }
+  .payload-item.empty { opacity: 0.25; }
   .payload-name {
     font-size: 14px; color: #ccc; font-family: monospace;
     word-break: break-all; line-height: 1.3;
   }
   .payload-btn {
     background: #1a3a1a; color: #7fd88a; border: 1px solid #2d5a2d;
-    border-radius: 6px; padding: 6px 18px;
-    font-size: 13px; font-weight: 700; cursor: pointer;
-    white-space: nowrap; margin-left: 10px; flex-shrink: 0;
+    border-radius: 6px; padding: 6px 14px;
+    font-size: 12px; font-weight: 700; cursor: pointer;
+    white-space: nowrap; margin-left: 8px; flex-shrink: 0;
   }
   .payload-btn:hover { background: #224422; }
-  .payload-btn:disabled {
-    background: #1a1a1a; color: #444; border-color: #333; cursor: not-allowed;
-  }
-  .payload-btn.sent {
-    background: #1a2a3a; color: #9fc7ff; border-color: #2d4a5a;
-  }
+  .payload-btn:disabled { background: #1a1a1a; color: #444; border-color: #333; cursor: not-allowed; }
+  .payload-btn.sent { background: #1a2a3a; color: #9fc7ff; border-color: #2d4a5a; }
+  .payload-btn.test { background: #3a3a1a; color: #ffd479; border-color: #5a5a2d; }
 
-  /* BOTTOM: log - FIXED HEIGHT */
   #ulog, #uchain {
     flex-shrink: 0;
     height: 140px;
@@ -130,18 +104,16 @@
   }
   #ulog .err { color: #ff9a8a; }
   #ulog .success { color: #7fd88a; }
-  #ulog .info, #ulog .warn { display: none !important; }
+  #ulog .warn { color: #ffd479; }
+  #ulog .info { color: #9fc7ff; }
 
-  #uchain {
-    display: none;
-  }
+  #uchain { display: none; }
   #uchain #console {
     width: 100%; height: 100%;
     font: 13px/1.4 "Consolas", "DejaVu Sans Mono", monospace;
     color: #b9e6b0; white-space: pre-wrap; overflow-y: auto;
   }
-  #uchain #console .LOG-INFO,
-  #uchain #console .LOG-WARN { display: none !important; }
+  #uchain #console .LOG-INFO, #uchain #console .LOG-WARN { display: none !important; }
   #uchain #console .LOG-ERROR { color: #ff9a8a; }
   #uchain #console .LOG-SUCCESS { color: #7fd88a; }
 
@@ -353,11 +325,10 @@
     return null;
   }
 
-  /* ===== CHECK IF ELFLDR IS ALREADY RUNNING ===== */
+  /* ===== CHECK IF ELFLDR IS RUNNING ===== */
   function checkElfldrRunning() {
     return new Promise(function(resolve){
       var sc = getSyscall();
-      // Method 1: syscall socket connect
       if (sc) {
         try {
           var fd = sc("socket", 2, 1, 0);
@@ -368,73 +339,138 @@
             addr[4] = 127; addr[5] = 0; addr[6] = 0; addr[7] = 1;
             var conn = sc("connect", fd, addr, 16);
             sc("close", fd);
-            if (conn >= 0) {
-              resolve(true);
-              return;
-            }
+            if (conn >= 0) { resolve(true); return; }
           }
         } catch (e) {}
       }
-      // Method 2: XHR POST
       try {
         var req = new XMLHttpRequest();
         req.open("POST", "http://127.0.0.1:9021/", false);
         req.timeout = 2000;
         req.send(new ArrayBuffer(0));
-        if (req.status === 200 || req.status === 0) {
-          resolve(true);
-          return;
-        }
+        if (req.status === 200 || req.status === 0) { resolve(true); return; }
       } catch (e) {}
       resolve(false);
     });
   }
 
-  /* ===== SEND VIA SYSCALLS (TCP socket) ===== */
+  /* ===== SEND PAYLOAD - MULTI METHOD ===== */
   function sendOnePayload(bytes, name) {
     return new Promise(function(resolve){
-      var sc = getSyscall();
-      if (!sc) {
-        log("syscalls not available — exploit may not have completed", "err");
-        resolve(false);
-        return;
-      }
-      try {
-        log("Opening socket to 127.0.0.1:9021 ...", "info");
-        var fd = sc("socket", 2, 1, 0);
-        if (fd < 0) { log("socket() failed: " + fd, "err"); resolve(false); return; }
+      log("=== Sending " + name + " ===", "warn");
 
-        var addr = new Uint8Array(16);
-        addr[0] = 0x00; addr[1] = 0x02;
-        addr[2] = (9021 >> 8) & 0xFF; addr[3] = 9021 & 0xFF;
-        addr[4] = 127; addr[5] = 0; addr[6] = 0; addr[7] = 1;
-
-        log("Connecting to elfldr ...", "info");
-        var conn = sc("connect", fd, addr, 16);
-        if (conn < 0) { sc("close", fd); log("connect() failed: " + conn, "err"); resolve(false); return; }
-
-        log("Sending " + name + " (" + bytes.byteLength + " bytes) ...", "info");
-        var u8 = new Uint8Array(bytes);
-        var sent = 0;
-        function writeChunk(){
-          if (sent >= u8.length) {
-            sc("close", fd);
-            log(name + " sent successfully!", "success");
-            resolve(true);
-            return;
+      // Method 1: HTTP POST via XMLHttpRequest (most compatible)
+      function tryXHR() {
+        return new Promise(function(res){
+          log("Method 1: XHR POST to 127.0.0.1:9021", "info");
+          try {
+            var req = new XMLHttpRequest();
+            req.open("POST", "http://127.0.0.1:9021/", true);
+            req.timeout = 30000;
+            req.onload = function(){
+              log("XHR status: " + req.status, req.status === 200 || req.status === 0 ? "success" : "err");
+              if (req.status === 200 || req.status === 0) {
+                log(name + " sent via XHR!", "success");
+                res(true);
+              } else {
+                res(false);
+              }
+            };
+            req.onerror = function(){
+              log("XHR error (CORS/network)", "err");
+              res(false);
+            };
+            req.ontimeout = function(){
+              log("XHR timeout", "err");
+              res(false);
+            };
+            req.send(bytes);
+          } catch (e) {
+            log("XHR exception: " + e.message, "err");
+            res(false);
           }
-          var end = Math.min(sent + 65536, u8.length);
-          var chunk = u8.subarray(sent, end);
-          var w = sc("write", fd, chunk, chunk.length);
-          if (w < 0) { sc("close", fd); log("write() failed: " + w, "err"); resolve(false); return; }
-          sent += w;
-          setTimeout(writeChunk, 0);
-        }
-        writeChunk();
-      } catch (e) {
-        log(name + " send exception: " + e.message, "err");
-        resolve(false);
+        });
       }
+
+      // Method 2: fetch() with no-cors
+      function tryFetch() {
+        return new Promise(function(res){
+          log("Method 2: fetch() no-cors", "info");
+          try {
+            fetch("http://127.0.0.1:9021/", {
+              method: "POST",
+              mode: "no-cors",
+              body: bytes
+            }).then(function(){
+              log(name + " sent via fetch!", "success");
+              res(true);
+            }).catch(function(e){
+              log("fetch error: " + e.message, "err");
+              res(false);
+            });
+          } catch (e) {
+            log("fetch exception: " + e.message, "err");
+            res(false);
+          }
+        });
+      }
+
+      // Method 3: syscall socket (if available after exploit)
+      function trySyscall() {
+        return new Promise(function(res){
+          var sc = getSyscall();
+          if (!sc) { log("Method 3: syscalls not available", "err"); res(false); return; }
+          log("Method 3: syscall socket", "info");
+          try {
+            var fd = sc("socket", 2, 1, 0);
+            if (fd < 0) { log("socket() failed: " + fd, "err"); res(false); return; }
+            var addr = new Uint8Array(16);
+            addr[0] = 0x00; addr[1] = 0x02;
+            addr[2] = (9021 >> 8) & 0xFF; addr[3] = 9021 & 0xFF;
+            addr[4] = 127; addr[5] = 0; addr[6] = 0; addr[7] = 1;
+            var conn = sc("connect", fd, addr, 16);
+            if (conn < 0) { sc("close", fd); log("connect() failed: " + conn, "err"); res(false); return; }
+            var u8 = new Uint8Array(bytes);
+            var sent = 0;
+            function writeChunk(){
+              if (sent >= u8.length) {
+                sc("close", fd);
+                log(name + " sent via syscall!", "success");
+                res(true);
+                return;
+              }
+              var end = Math.min(sent + 65536, u8.length);
+              var chunk = u8.subarray(sent, end);
+              var w = sc("write", fd, chunk, chunk.length);
+              if (w < 0) { sc("close", fd); log("write() failed: " + w, "err"); res(false); return; }
+              sent += w;
+              setTimeout(writeChunk, 0);
+            }
+            writeChunk();
+          } catch (e) {
+            log("syscall exception: " + e.message, "err");
+            res(false);
+          }
+        });
+      }
+
+      // Try methods in order
+      tryXHR().then(function(ok){
+        if (ok) { resolve(true); return; }
+        return tryFetch();
+      }).then(function(ok){
+        if (ok === true) { resolve(true); return; }
+        if (ok === false) {
+          return trySyscall();
+        }
+      }).then(function(ok){
+        if (ok === true) {
+          resolve(true);
+        } else {
+          log("ALL METHODS FAILED for " + name, "err");
+          resolve(false);
+        }
+      });
     });
   }
 
@@ -550,7 +586,7 @@
       log("chain: " + name + " — ready", "success");
       jbBtn.className = "";
       jbBtn.onclick = function(){
-        if (armed) { log("jailbreak already running — do not click again!", "err"); return; }
+        if (armed) { log("jailbreak already running!", "err"); return; }
         armed = true;
         jbBtn.className = "running";
         jbBtn.textContent = "RUNNING...";
@@ -561,20 +597,18 @@
     }
   }
 
-  // Auto-discover payloads + check if elfldr already running
   discoverPayloads().then(function(){
     buildPayloadList();
-    // Check if elfldr is already running from a previous session
     checkElfldrRunning().then(function(running){
       if (running) {
         elfldrReady = true;
-        log("elfldr already running on :9021 — payloads unlocked", "success");
+        log("elfldr already running — payloads unlocked", "success");
         enablePayloadButtons();
         jbBtn.className = "elfldr-ready";
         jbBtn.textContent = "ELFLDR READY";
         jbBtn.disabled = true;
       } else {
-        log("elfldr not running — click JAILBREAK to start", "info");
+        log("elfldr not running — click JAILBREAK", "info");
       }
     });
   });

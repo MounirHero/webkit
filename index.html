@@ -93,7 +93,8 @@
   .payload-btn:disabled { background: #1a1a1a; color: #444; border-color: #333; cursor: not-allowed; }
   .payload-btn.sent { background: #1a2a3a; color: #9fc7ff; border-color: #2d4a5a; }
 
-  #ulog, #uchain {
+  /* LOG - always visible, fixed height */
+  #ulog {
     flex-shrink: 0;
     height: 140px;
     background: #0a0a0a; border: 1px solid #222; border-radius: 10px;
@@ -106,15 +107,10 @@
   #ulog .warn { color: #ffd479; }
   #ulog .info { color: #9fc7ff; }
 
-  #uchain { display: none; }
-  #uchain #console {
-    width: 100%; height: 100%;
-    font: 13px/1.4 "Consolas", "DejaVu Sans Mono", monospace;
-    color: #b9e6b0; white-space: pre-wrap; overflow-y: auto;
+  /* umtx2 console - hidden, we redirect its output to #ulog */
+  #uchain {
+    display: none !important;
   }
-  #uchain #console .LOG-INFO, #uchain #console .LOG-WARN { display: none !important; }
-  #uchain #console .LOG-ERROR { color: #ff9a8a; }
-  #uchain #console .LOG-SUCCESS { color: #7fd88a; }
 
   #extframe {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%; border: 0;
@@ -155,7 +151,6 @@
   var P2JB  = ["12.00","12.02","12.40","12.50","12.70"];
 
   var logEl = document.getElementById("ulog");
-  var uchainEl = document.getElementById("uchain");
   var payloadListEl = document.getElementById("payload-list");
   var jbBtn = document.getElementById("ujb");
   var refreshBtn = document.getElementById("refresh-payloads");
@@ -425,9 +420,8 @@
   function runUx() {
     log("loading umtx2 chain...", "warn");
     setBase("ux/");
-    logEl.style.display = "none";
-    uchainEl.style.display = "block";
-    uchainEl.innerHTML =
+    // Do NOT hide #ulog - keep it visible always
+    document.getElementById("uchain").innerHTML =
       '<div id="toast-container" style="display:none"></div>' +
       '<span id="top-bar-text" style="display:none"></span>' +
       '<div id="main-content">' +

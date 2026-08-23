@@ -13,108 +13,105 @@
     overflow: hidden;
   }
   #uwrap {
-    display: flex; flex-direction: row;
+    display: flex; flex-direction: column;
     width: 100%; height: 100%;
-    padding: 16px; gap: 16px;
+    padding: 16px; gap: 12px;
   }
 
-  /* LEFT COLUMN */
-  #uleft {
-    display: flex; flex-direction: column;
-    flex: 1; min-width: 0; gap: 10px;
+  /* TOP ROW: logo + info + jailbreak button */
+  #utop {
+    display: flex; flex-direction: row;
+    align-items: center; justify-content: space-between;
+    flex-shrink: 0; gap: 16px;
   }
   #uhead {
-    display: flex; flex-direction: column;
-    align-items: flex-start; gap: 6px;
-    flex-shrink: 0;
+    display: flex; flex-direction: row;
+    align-items: center; gap: 14px;
   }
   #ulogo {
-    width: min(320px, 40vw); height: auto;
-    border-radius: 12px;
+    width: min(100px, 15vw); height: auto;
+    border-radius: 10px;
   }
-  #ubyline {
-    font-size: 13px; color: #8fa0b3;
-    padding-left: 4px;
-  }
-  #ufwline {
-    font-size: 14px; color: #9fb1c3; padding-left: 4px;
-  }
+  #uheadtxt { display: flex; flex-direction: column; gap: 2px; }
+  #ubyline { font-size: 12px; color: #8fa0b3; }
+  #ufwline { font-size: 13px; color: #9fb1c3; }
   #ufwline b { color: #fff; }
 
-  /* LOG */
-  #ulog {
+  #ujb {
+    padding: 14px 48px;
+    border-radius: 12px; background: #1a3a1a; border: 2px solid #2d5a2d;
+    color: #7fd88a; font-weight: 800; font-size: 18px; letter-spacing: 2px;
+    cursor: pointer; text-decoration: none;
+  }
+  #ujb:hover { background: #224422; }
+  #ujb.disabled {
+    background: #1a1a1a; border-color: #333; color: #555;
+    cursor: not-allowed;
+  }
+  #ujb.running {
+    opacity: 0.6; cursor: wait;
+  }
+
+  /* MIDDLE: payload grid (3 columns x 6 rows = 18 slots) */
+  #upayloads {
     flex: 1; min-height: 0;
+    display: flex; flex-direction: column;
     background: #0a0a0a; border: 1px solid #222; border-radius: 10px;
-    padding: 10px 12px;
-    font: 12px/1.5 "Consolas", "DejaVu Sans Mono", monospace;
+    padding: 10px; gap: 6px;
+    overflow-y: auto;
+  }
+  #upayloads h3 {
+    font-size: 13px; color: #888; letter-spacing: 1px;
+    text-align: center; margin-bottom: 4px;
+  }
+  #payload-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+  .payload-slot {
+    display: flex; align-items: center; justify-content: space-between;
+    background: #111; border: 1px solid #2a2a2a; border-radius: 6px;
+    padding: 6px 10px; min-height: 36px;
+  }
+  .payload-slot.empty {
+    opacity: 0.4;
+  }
+  .payload-slot-name {
+    font-size: 11px; color: #aaa; font-family: monospace;
+    word-break: break-all; line-height: 1.3;
+  }
+  .payload-slot-btn {
+    background: #1a3a1a; color: #7fd88a; border: 1px solid #2d5a2d;
+    border-radius: 4px; padding: 4px 10px;
+    font-size: 10px; font-weight: 700; cursor: pointer;
+    white-space: nowrap; margin-left: 6px; flex-shrink: 0;
+  }
+  .payload-slot-btn:hover { background: #224422; }
+  .payload-slot-btn:disabled {
+    background: #1a1a1a; color: #444; border-color: #333; cursor: not-allowed;
+  }
+  .payload-slot-btn.sent {
+    background: #1a2a3a; color: #9fc7ff; border-color: #2d4a5a;
+  }
+
+  /* BOTTOM: log */
+  #ulog {
+    flex-shrink: 0;
+    height: 140px;
+    background: #0a0a0a; border: 1px solid #222; border-radius: 10px;
+    padding: 8px 10px;
+    font: 11px/1.4 "Consolas", "DejaVu Sans Mono", monospace;
     color: #b9e6b0; white-space: pre-wrap; overflow-y: auto;
   }
   #ulog .err { color: #ff9a8a; }
   #ulog .success { color: #7fd88a; }
   #ulog .info, #ulog .warn { display: none !important; }
 
-  /* umtx2 console */
+  /* umtx2 console - hidden, we observe it */
   #uchain {
     display: none;
-    flex: 1; min-height: 0;
   }
-  #uchain #console {
-    width: 100%; height: 100%;
-    background: #0a0a0a; border: 1px solid #222; border-radius: 10px;
-    padding: 10px 12px;
-    font: 12px/1.5 "Consolas", "DejaVu Sans Mono", monospace;
-    color: #b9e6b0; white-space: pre-wrap; overflow-y: auto;
-  }
-  #uchain #console .LOG-INFO,
-  #uchain #console .LOG-WARN { display: none !important; }
-  #uchain #console .LOG-ERROR { color: #ff9a8a; }
-  #uchain #console .LOG-SUCCESS { color: #7fd88a; }
-
-  /* RIGHT COLUMN - always visible */
-  #uright {
-    display: flex;
-    flex-direction: column;
-    width: 320px; flex-shrink: 0;
-    background: #0d0d0d; border: 1px solid #2a2a2a; border-radius: 12px;
-    padding: 14px; gap: 10px;
-    overflow-y: auto;
-  }
-  #uright h2 {
-    font-size: 15px; color: #fff; letter-spacing: 1px;
-    border-bottom: 1px solid #333; padding-bottom: 8px;
-  }
-  .payload-item {
-    display: flex; align-items: center; justify-content: space-between;
-    background: #161616; border: 1px solid #2a2a2a; border-radius: 8px;
-    padding: 10px 12px;
-  }
-  .payload-name {
-    font-size: 12px; color: #ccc; font-family: monospace;
-    word-break: break-all;
-  }
-  .payload-btn {
-    background: #1a3a1a; color: #7fd88a; border: 1px solid #2d5a2d;
-    border-radius: 6px; padding: 6px 14px;
-    font-size: 11px; font-weight: 700; cursor: pointer;
-    white-space: nowrap; margin-left: 8px;
-  }
-  .payload-btn:hover { background: #224422; }
-  .payload-btn:disabled {
-    background: #222; color: #555; border-color: #333; cursor: not-allowed;
-  }
-  .payload-btn.sent {
-    background: #1a3a3a; color: #9fc7ff; border-color: #2d4a5a;
-  }
-  #payload-status {
-    font-size: 11px; color: #666; text-align: center; margin-top: 4px;
-  }
-  #check-elfldr {
-    background: #1a1a3a; color: #9fc7ff; border: 1px solid #2d3a5a;
-    border-radius: 6px; padding: 8px;
-    font-size: 11px; font-weight: 700; cursor: pointer;
-    text-align: center; margin-top: 4px;
-  }
-  #check-elfldr:hover { background: #22224a; }
 
   /* Hidden iframe */
   #extframe {
@@ -128,22 +125,24 @@
 <iframe id="extframe" sandbox="allow-scripts allow-same-origin"></iframe>
 
 <div id="uwrap">
-  <div id="uleft">
+  <div id="utop">
     <div id="uhead">
       <img id="ulogo" src="logo.jpg" alt="PS5"/>
-      <div id="ubyline">by InsideMatrixDev</div>
-      <div id="ufwline">detecting firmware...</div>
+      <div id="uheadtxt">
+        <div id="ubyline">by InsideMatrixDev</div>
+        <div id="ufwline">detecting firmware...</div>
+      </div>
     </div>
-    <div id="ulog"></div>
-    <div id="uchain"></div>
+    <button id="ujb" class="disabled">JAILBREAK</button>
   </div>
 
-  <div id="uright">
-    <h2>PAYLOADS</h2>
-    <div id="payload-list"></div>
-    <div id="payload-status">waiting for elfldr...</div>
-    <button id="check-elfldr">CHECK ELFLDR</button>
+  <div id="upayloads">
+    <h3>PAYLOAD SLOTS</h3>
+    <div id="payload-grid"></div>
   </div>
+
+  <div id="ulog"></div>
+  <div id="uchain"></div>
 </div>
 
 <script>
@@ -154,12 +153,11 @@
 
   var logEl = document.getElementById("ulog");
   var uchainEl = document.getElementById("uchain");
-  var payloadListEl = document.getElementById("payload-list");
-  var payloadStatusEl = document.getElementById("payload-status");
-  var urightEl = document.getElementById("uright");
-  var checkBtn = document.getElementById("check-elfldr");
+  var payloadGridEl = document.getElementById("payload-grid");
+  var jbBtn = document.getElementById("ujb");
   var usingUchain = false;
   var elfldrReady = false;
+  var armed = false;
 
   function log(msg, cls) {
     var d = new Date();
@@ -167,37 +165,9 @@
     var line = document.createElement("div");
     if (cls) line.className = cls;
     line.textContent = "["+t+"] "+msg;
-    if (usingUchain) {
-      var consoleEl = document.getElementById("console");
-      if (consoleEl) {
-        consoleEl.appendChild(line);
-        consoleEl.scrollTop = consoleEl.scrollHeight;
-        return;
-      }
-    }
     logEl.appendChild(line);
     logEl.scrollTop = logEl.scrollHeight;
   }
-
-  function switchToUchain() {
-    usingUchain = true;
-    logEl.style.display = "none";
-    uchainEl.style.display = "block";
-  }
-
-  function setElfldrReady() {
-    if (elfldrReady) return;
-    elfldrReady = true;
-    log("elfldr detected on :9021!", "success");
-    payloadStatusEl.textContent = "elfldr ready — select payload";
-    payloadStatusEl.style.color = "#7fd88a";
-    var btns = payloadListEl.querySelectorAll(".payload-btn");
-    for (var i = 0; i < btns.length; i++) {
-      btns[i].disabled = false;
-    }
-  }
-
-  function has(list, fw) { for (var i=0;i<list.length;i++) if (list[i]===fw) return true; return false; }
 
   function setBase(href) {
     var b = document.createElement("base");
@@ -220,31 +190,58 @@
     return p;
   }
 
-  /* ===== PAYLOAD DEFINITIONS ===== */
+  function has(list, fw) { for (var i=0;i<list.length;i++) if (list[i]===fw) return true; return false; }
+
+  /* ===== 18 PAYLOAD SLOTS - edit these to add your own ===== */
   var PAYLOADS = [
-    { name: "shadowmountplus.elf", ghUrl: "https://github.com/drakmor/ShadowMountPlus/releases/download/1.6beta16/shadowmountplus.elf", local: "payload/shadowmountplus.elf" },
-    { name: "OnionHEN.elf", ghUrl: "https://github.com/aydencharles/onionHEN/releases/download/v0.0.10/OnionHEN.elf", local: "payload/OnionHEN.elf" }
+    { name: "shadowmountplus.elf", url: "payload/shadowmountplus.elf" },
+    { name: "OnionHEN.elf", url: "payload/OnionHEN.elf" },
+    { name: "", url: "" },
+    { name: "", url: "" },
+    { name: "", url: "" },
+    { name: "", url: "" },
+    { name: "", url: "" },
+    { name: "", url: "" },
+    { name: "", url: "" },
+    { name: "", url: "" },
+    { name: "", url: "" },
+    { name: "", url: "" },
+    { name: "", url: "" },
+    { name: "", url: "" },
+    { name: "", url: "" },
+    { name: "", url: "" },
+    { name: "", url: "" },
+    { name: "", url: "" }
   ];
 
-  function buildPayloadList() {
-    payloadListEl.innerHTML = "";
+  function buildPayloadGrid() {
+    payloadGridEl.innerHTML = "";
     PAYLOADS.forEach(function(p, idx){
-      var row = document.createElement("div");
-      row.className = "payload-item";
+      var slot = document.createElement("div");
+      slot.className = "payload-slot" + (p.name ? "" : " empty");
       var nameSpan = document.createElement("span");
-      nameSpan.className = "payload-name";
-      nameSpan.textContent = p.name;
+      nameSpan.className = "payload-slot-name";
+      nameSpan.textContent = p.name || "slot " + (idx + 1);
       var btn = document.createElement("button");
-      btn.className = "payload-btn";
-      btn.textContent = "SEND";
+      btn.className = "payload-slot-btn";
+      btn.textContent = p.name ? "SEND" : "-";
       btn.disabled = true;
-      btn.onclick = function(){ sendPayload(idx, btn); };
-      row.appendChild(nameSpan);
-      row.appendChild(btn);
-      payloadListEl.appendChild(row);
+      if (p.name) {
+        btn.onclick = function(){ sendPayload(idx, btn); };
+      }
+      slot.appendChild(nameSpan);
+      slot.appendChild(btn);
+      payloadGridEl.appendChild(slot);
     });
   }
-  buildPayloadList();
+  buildPayloadGrid();
+
+  function enableAllPayloadButtons() {
+    var btns = payloadGridEl.querySelectorAll(".payload-slot-btn");
+    for (var i = 0; i < btns.length; i++) {
+      if (PAYLOADS[i] && PAYLOADS[i].name) btns[i].disabled = false;
+    }
+  }
 
   function fetchPayload(url) {
     return new Promise(function(resolve){
@@ -261,29 +258,24 @@
 
   function sendPayload(idx, btn) {
     var p = PAYLOADS[idx];
+    if (!p.name || !p.url) return;
     btn.disabled = true;
-    btn.textContent = "LOADING...";
+    btn.textContent = "...";
     log("Loading " + p.name + " ...", "info");
-    fetchPayload(p.local).then(function(buf){
+    fetchPayload(p.url).then(function(buf){
       if (!buf) {
-        log("Local not found, trying GitHub ...", "warn");
-        return fetchPayload(p.ghUrl);
-      }
-      return buf;
-    }).then(function(buf){
-      if (!buf) {
-        log("Could not load " + p.name, "err");
+        log("Could not load " + p.name + " from " + p.url, "err");
         btn.disabled = false;
         btn.textContent = "SEND";
         return;
       }
       log(p.name + " loaded (" + buf.byteLength + " bytes)", "success");
-      btn.textContent = "SENDING...";
+      btn.textContent = "->";
       return sendOnePayload(buf, p.name);
     }).then(function(ok){
       if (ok) {
-        btn.textContent = "SENT";
-        btn.className = "payload-btn sent";
+        btn.textContent = "OK";
+        btn.className = "payload-slot-btn sent";
         btn.disabled = true;
       } else {
         btn.disabled = false;
@@ -295,28 +287,29 @@
   function sendOnePayload(bytes, name) {
     return new Promise(function(resolve){
       try {
-        if (typeof syscall !== "function") { log("syscalls not available", "err"); resolve(false); return; }
-        var fd = syscall("socket", 2, 1, 0);
+        var sc = (typeof syscall === "function") ? syscall : (typeof window.syscall === "function") ? window.syscall : null;
+        if (!sc) { log("syscalls not available", "err"); resolve(false); return; }
+        var fd = sc("socket", 2, 1, 0);
         if (fd < 0) { log("socket() failed: " + fd, "err"); resolve(false); return; }
         var addr = new Uint8Array(16);
         addr[0] = 0x10; addr[1] = 0x02;
         addr[2] = (9021 >> 8) & 0xFF; addr[3] = 9021 & 0xFF;
         addr[4] = 127; addr[5] = 0; addr[6] = 0; addr[7] = 1;
-        var conn = syscall("connect", fd, addr, 16);
-        if (conn < 0) { syscall("close", fd); log("connect() failed: " + conn, "err"); resolve(false); return; }
+        var conn = sc("connect", fd, addr, 16);
+        if (conn < 0) { sc("close", fd); log("connect() failed: " + conn, "err"); resolve(false); return; }
         var u8 = new Uint8Array(bytes);
         var sent = 0;
         function writeChunk(){
           if (sent >= u8.length) {
-            syscall("close", fd);
-            log(name + " sent successfully!", "success");
+            sc("close", fd);
+            log(name + " sent!", "success");
             resolve(true);
             return;
           }
           var end = Math.min(sent + 65536, u8.length);
           var chunk = u8.subarray(sent, end);
-          var w = syscall("write", fd, chunk, chunk.length);
-          if (w < 0) { syscall("close", fd); log("write() failed: " + w, "err"); resolve(false); return; }
+          var w = sc("write", fd, chunk, chunk.length);
+          if (w < 0) { sc("close", fd); log("write() failed: " + w, "err"); resolve(false); return; }
           sent += w;
           setTimeout(writeChunk, 0);
         }
@@ -328,70 +321,29 @@
     });
   }
 
-  /* ===== ELFDR DETECTION ===== */
-  function checkElfldr() {
-    return new Promise(function(resolve){
-      var found = false;
-      try {
-        if (typeof syscall === "function") {
-          var fd = syscall("socket", 2, 1, 0);
-          if (fd >= 0) {
-            var addr = new Uint8Array(16);
-            addr[0] = 0x10; addr[1] = 0x02;
-            addr[2] = (9021 >> 8) & 0xFF; addr[3] = 9021 & 0xFF;
-            addr[4] = 127; addr[5] = 0; addr[6] = 0; addr[7] = 1;
-            var conn = syscall("connect", fd, addr, 16);
-            syscall("close", fd);
-            if (conn >= 0) {
-              found = true;
-            }
-          }
+  /* ===== DETECT ELFLDR FROM LOG ===== */
+  function watchConsoleForElfldr() {
+    var consoleEl = document.getElementById("console");
+    if (!consoleEl) return;
+    var observer = new MutationObserver(function(mutations){
+      var text = consoleEl.innerText || consoleEl.textContent || "";
+      if (text.indexOf("elfldr") >= 0 || text.indexOf("Finished, out = 0x0") >= 0 || text.indexOf("Loading ELF file") >= 0) {
+        if (!elfldrReady) {
+          elfldrReady = true;
+          log("elfldr detected from exploit log!", "success");
+          enableAllPayloadButtons();
         }
-      } catch (e) {}
-      if (found) {
-        resolve(true);
-        return;
       }
-      var req = new XMLHttpRequest();
-      req.open("GET", "http://127.0.0.1:9021/", true);
-      req.timeout = 2000;
-      req.onload = function(){ resolve(true); };
-      req.onerror = function(){ resolve(false); };
-      req.ontimeout = function(){ resolve(false); };
-      req.send();
-      setTimeout(function(){ if (!found) resolve(false); }, 2500);
     });
+    observer.observe(consoleEl, { childList: true, subtree: true, characterData: true });
   }
-
-  function pollElfldr() {
-    if (elfldrReady) return;
-    checkElfldr().then(function(up){
-      if (up) {
-        setElfldrReady();
-        return;
-      }
-      setTimeout(pollElfldr, 3000);
-    });
-  }
-
-  checkBtn.onclick = function(){
-    checkBtn.textContent = "CHECKING...";
-    checkElfldr().then(function(up){
-      if (up) {
-        setElfldrReady();
-      } else {
-        log("elfldr not detected on :9021", "err");
-        checkBtn.textContent = "CHECK ELFLDR";
-      }
-    });
-  };
 
   /* ===== umtx2 ===== */
   function runUx() {
     log("loading umtx2 chain...", "info");
     setBase("ux/");
-    switchToUchain();
-    document.getElementById("uchain").innerHTML =
+    uchainEl.style.display = "block";
+    uchainEl.innerHTML =
       '<div id="toast-container" style="display:none"></div>' +
       '<span id="top-bar-text" style="display:none"></span>' +
       '<div id="main-content">' +
@@ -404,10 +356,8 @@
       .then(function () { return loadJs("psfree/psfree.js", true); })
       .then(function () { return loadJs("payload_map.js", false); })
       .then(function () {
-        log("umtx2 loaded — starting exploit", "success");
-        run(false, false);
-        log("exploit running — polling elfldr", "info");
-        pollElfldr();
+        log("umtx2 loaded — click JAILBREAK or wait", "success");
+        watchConsoleForElfldr();
       })
       .catch(function (e) { log("umtx2 failed: " + e.message, "err"); });
   }
@@ -422,14 +372,24 @@
       var d = e.data;
       if (d.bridgeType === "log" || d.bridgeType === "stage" || d.bridgeType === "early") {
         var txt = d.text || d.msg || d.item || "";
-        var isErr = d.progress === -1 || txt.toLowerCase().indexOf("error") >= 0 || txt.toLowerCase().indexOf("fail") >= 0;
-        var isSuccess = txt.toLowerCase().indexOf("success") >= 0 || txt.toLowerCase().indexOf("done") >= 0 || d.progress === 100;
+        var isErr = d.progress === -1 || txt.toLowerCase().indexOf("error") >= 0;
+        var isSuccess = txt.toLowerCase().indexOf("success") >= 0 || txt.toLowerCase().indexOf("done") >= 0;
         log("[" + (d.chain||"ext") + "] " + txt, isErr ? "err" : (isSuccess ? "success" : "info"));
-      } else if (d.bridgeType === "error" || d.bridgeType === "rejection") {
+        if (txt.toLowerCase().indexOf("elfldr") >= 0 || txt.toLowerCase().indexOf("finished") >= 0) {
+          if (!elfldrReady) {
+            elfldrReady = true;
+            log("elfldr detected from iframe!", "success");
+            enableAllPayloadButtons();
+          }
+        }
+      } else if (d.bridgeType === "error") {
         log("[" + (d.chain||"ext") + "] ERROR: " + (d.msg||""), "err");
-      } else if (d.bridgeType === "jb-done") {
-        log("Jailbreak complete — polling elfldr", "success");
-        pollElfldr();
+      } else if (d.bridgeType === "elfldr-up") {
+        if (!elfldrReady) {
+          elfldrReady = true;
+          log("elfldr detected by bridge!", "success");
+          enableAllPayloadButtons();
+        }
       }
     });
   }
@@ -451,43 +411,40 @@
   else if (fw && has(P2JB, fw)) { chain = "p2jb"; name = "p2JB"; extUrl = "ext/p2jb.html?go=1&auto=1&trigger=netcontrol&payload=1&v=128"; }
 
   var fwline = document.getElementById("ufwline");
-  var armed = false;
   var resume = null;
   try { resume = sessionStorage.getItem("on_load_autorun"); } catch (e) { }
 
   if (!fw && !forced) {
-    fwline.innerHTML = "<b>not a PS5 browser</b> — firmware not detected";
-    log("User-Agent has no PlayStation 5 firmware tag: " + ua, "warn");
+    fwline.innerHTML = "<b>not a PS5 browser</b>";
+    log("no PS5 firmware detected", "warn");
+    jbBtn.className = "disabled";
   } else {
-    fwline.innerHTML = "firmware: <b>" + (fw || "?") + "</b>"
-      + (name ? " &nbsp;&rarr;&nbsp; chain: <b>" + name + "</b>" : "");
+    fwline.innerHTML = "firmware: <b>" + (fw || "?") + "</b> &rarr; chain: <b>" + (name || "?") + "</b>";
     if (fw) log("detected PS5 firmware " + fw, "success");
     if (!chain) {
-      log("firmware " + fw + " is NOT supported (1.00-5.50, 7.00-12.70).", "err");
+      log("firmware " + fw + " not supported", "err");
+      jbBtn.className = "disabled";
     } else {
-      log("chain selected: " + name + " — auto-run in 1s", "success");
+      log("chain: " + name + " — ready", "success");
+      jbBtn.className = "";
+      jbBtn.onclick = function(){
+        if (armed) return;
+        armed = true;
+        jbBtn.className = "running";
+        jbBtn.textContent = "RUNNING...";
+        log("starting " + name + "...", "success");
+        if (chain === "ux") runUx();
+        else if (chain === "poops" || chain === "p2jb") runExt(extUrl, name);
+      };
     }
   }
 
-  function start(which, label) {
-    if (armed) return;
-    armed = true;
-    log("starting " + label + " — do not touch the controller...", "success");
-    setTimeout(function () {
-      if (which === "ux") runUx();
-      else if (which === "poops" || which === "p2jb") runExt(extUrl, label);
-    }, 1000);
-  }
-
-  if (chain && !forced) {
-    setTimeout(function () {
-      if (!armed) start(chain, name);
-    }, 1000);
-  }
-
   if (resume && !armed) {
-    log("resuming umtx2 after browser reload...", "warn");
-    start("ux", "umtx2 (auto-resume)");
+    log("resuming after reload...", "warn");
+    armed = true;
+    jbBtn.className = "running";
+    jbBtn.textContent = "RUNNING...";
+    runUx();
   }
 })();
 </script>

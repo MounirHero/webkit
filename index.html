@@ -18,7 +18,7 @@
     padding: 16px; gap: 12px;
   }
 
-  /* TOP ROW: logo + info + jailbreak button */
+  /* TOP ROW */
   #utop {
     display: flex; flex-direction: row;
     align-items: center; justify-content: space-between;
@@ -52,7 +52,7 @@
     opacity: 0.6; cursor: wait;
   }
 
-  /* MIDDLE: payload grid (3 columns x 6 rows = 18 slots) */
+  /* MIDDLE: payload grid */
   #upayloads {
     flex: 1; min-height: 0;
     display: flex; flex-direction: column;
@@ -60,10 +60,18 @@
     padding: 10px; gap: 6px;
     overflow-y: auto;
   }
+  #upayloads-header {
+    display: flex; justify-content: space-between; align-items: center;
+  }
   #upayloads h3 {
     font-size: 13px; color: #888; letter-spacing: 1px;
-    text-align: center; margin-bottom: 4px;
   }
+  #refresh-payloads {
+    background: #1a1a3a; color: #9fc7ff; border: 1px solid #2d3a5a;
+    border-radius: 4px; padding: 4px 10px;
+    font-size: 10px; font-weight: 700; cursor: pointer;
+  }
+  #refresh-payloads:hover { background: #22224a; }
   #payload-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -75,7 +83,7 @@
     padding: 6px 10px; min-height: 36px;
   }
   .payload-slot.empty {
-    opacity: 0.4;
+    opacity: 0.3;
   }
   .payload-slot-name {
     font-size: 11px; color: #aaa; font-family: monospace;
@@ -108,12 +116,8 @@
   #ulog .success { color: #7fd88a; }
   #ulog .info, #ulog .warn { display: none !important; }
 
-  /* umtx2 console - hidden, we observe it */
-  #uchain {
-    display: none;
-  }
+  #uchain { display: none; }
 
-  /* Hidden iframe */
   #extframe {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%; border: 0;
     z-index: 1; opacity: 0; pointer-events: none;
@@ -137,7 +141,10 @@
   </div>
 
   <div id="upayloads">
-    <h3>PAYLOAD SLOTS</h3>
+    <div id="upayloads-header">
+      <h3>PAYLOAD SLOTS</h3>
+      <button id="refresh-payloads">REFRESH</button>
+    </div>
     <div id="payload-grid"></div>
   </div>
 
@@ -155,9 +162,10 @@
   var uchainEl = document.getElementById("uchain");
   var payloadGridEl = document.getElementById("payload-grid");
   var jbBtn = document.getElementById("ujb");
-  var usingUchain = false;
+  var refreshBtn = document.getElementById("refresh-payloads");
   var elfldrReady = false;
   var armed = false;
+  var PAYLOADS = [];
 
   function log(msg, cls) {
     var d = new Date();
@@ -192,51 +200,87 @@
 
   function has(list, fw) { for (var i=0;i<list.length;i++) if (list[i]===fw) return true; return false; }
 
-  /* ===== 18 PAYLOAD SLOTS - edit these to add your own ===== */
-  var PAYLOADS = [
-    { name: "shadowmountplus.elf", url: "payload/shadowmountplus.elf" },
-    { name: "OnionHEN.elf", url: "payload/OnionHEN.elf" },
-    { name: "", url: "" },
-    { name: "", url: "" },
-    { name: "", url: "" },
-    { name: "", url: "" },
-    { name: "", url: "" },
-    { name: "", url: "" },
-    { name: "", url: "" },
-    { name: "", url: "" },
-    { name: "", url: "" },
-    { name: "", url: "" },
-    { name: "", url: "" },
-    { name: "", url: "" },
-    { name: "", url: "" },
-    { name: "", url: "" },
-    { name: "", url: "" },
-    { name: "", url: "" }
-  ];
+  /* ===== AUTO-DISCOVER PAYLOADS ===== */
+  function discoverPayloads() {
+    return new Promise(function(resolve){
+      // Try to load payload/payloads.json (user-created list)
+      var req = new XMLHttpRequest();
+      req.open("GET", "payload/payloads.json", true);
+      req.onload = function(){
+        if (req.status === 200) {
+          try {
+            var data = JSON.parse(req.responseText);
+            if (Array.isArray(data) && data.length > 0) {
+              PAYLOADS = data.slice(0, 18);
+              log("loaded " + PAYLOADS.length + " payloads from payload/payloads.json", "success");
+              resolve();
+              return;
+            }
+          } catch(e) {}
+        }
+        // Fallback: probe common payload names
+        probePayloads().then(resolve);
+      };
+      req.onerror = function(){ probePayloads().then(resolve); };
+      req.send();
+    });
+  }
+
+  function probePayloads() {
+    return new Promise(function(resolve){
+      var candidates = [
+        "shadowmountplus.elf", "OnionHEN.elf", "etaHEN.elf", "kstuff.elf",
+        "elfldr.elf", "ftpsrv.elf", "ps5debug.elf", "orbisdev.elf",
+        "linux-loader.elf", "linux-1gb.elf", "linux-2gb.elf", "linux-3gb.elf",
+        "linux-4gb.elf", "ps5-payload-sdk.elf", "prospero.elf", "test.elf",
+        "payload1.elf", "payload2.elf"
+      ];
+      var found = [];
+      var checked = 0;
+      candidates.forEach(function(name){
+        var r = new XMLHttpRequest();
+        r.open("HEAD", "payload/" + name, true);
+        r.onload = function(){
+          checked++;
+          if (r.status === 200) found.push({name: name, url: "payload/" + name});
+          if (checked >= candidates.length) {
+            PAYLOADS = found.slice(0, 18);
+            if (PAYLOADS.length > 0) log("auto-discovered " + PAYLOADS.length + " payloads in /payload/", "success");
+            else log("no payloads found in /payload/ — add .elf files or create payload/payloads.json", "warn");
+            resolve();
+          }
+        };
+        r.onerror = function(){ checked++; if (checked >= candidates.length) { PAYLOADS = found.slice(0, 18); resolve(); } };
+        r.send();
+      });
+    });
+  }
 
   function buildPayloadGrid() {
     payloadGridEl.innerHTML = "";
-    PAYLOADS.forEach(function(p, idx){
+    var slots = PAYLOADS.length > 0 ? PAYLOADS : [];
+    // Always show 18 slots
+    for (var i = 0; i < 18; i++) {
+      var p = slots[i] || {name: "", url: ""};
       var slot = document.createElement("div");
       slot.className = "payload-slot" + (p.name ? "" : " empty");
       var nameSpan = document.createElement("span");
       nameSpan.className = "payload-slot-name";
-      nameSpan.textContent = p.name || "slot " + (idx + 1);
+      nameSpan.textContent = p.name || "slot " + (i + 1);
       var btn = document.createElement("button");
       btn.className = "payload-slot-btn";
       btn.textContent = p.name ? "SEND" : "-";
       btn.disabled = true;
       if (p.name) {
-        btn.onclick = function(){ sendPayload(idx, btn); };
+        btn.onclick = function(idx){ return function(){ sendPayload(idx); }; }(i);
       }
       slot.appendChild(nameSpan);
       slot.appendChild(btn);
       payloadGridEl.appendChild(slot);
-    });
+    }
   }
-  buildPayloadGrid();
 
-  function enableAllPayloadButtons() {
+  function enablePayloadButtons() {
     var btns = payloadGridEl.querySelectorAll(".payload-slot-btn");
     for (var i = 0; i < btns.length; i++) {
       if (PAYLOADS[i] && PAYLOADS[i].name) btns[i].disabled = false;
@@ -256,15 +300,17 @@
     });
   }
 
-  function sendPayload(idx, btn) {
+  function sendPayload(idx) {
     var p = PAYLOADS[idx];
-    if (!p.name || !p.url) return;
+    if (!p || !p.name || !p.url) return;
+    var btns = payloadGridEl.querySelectorAll(".payload-slot-btn");
+    var btn = btns[idx];
     btn.disabled = true;
     btn.textContent = "...";
     log("Loading " + p.name + " ...", "info");
     fetchPayload(p.url).then(function(buf){
       if (!buf) {
-        log("Could not load " + p.name + " from " + p.url, "err");
+        log("Could not load " + p.name, "err");
         btn.disabled = false;
         btn.textContent = "SEND";
         return;
@@ -324,14 +370,17 @@
   /* ===== DETECT ELFLDR FROM LOG ===== */
   function watchConsoleForElfldr() {
     var consoleEl = document.getElementById("console");
-    if (!consoleEl) return;
+    if (!consoleEl) {
+      setTimeout(watchConsoleForElfldr, 500);
+      return;
+    }
     var observer = new MutationObserver(function(mutations){
       var text = consoleEl.innerText || consoleEl.textContent || "";
       if (text.indexOf("elfldr") >= 0 || text.indexOf("Finished, out = 0x0") >= 0 || text.indexOf("Loading ELF file") >= 0) {
         if (!elfldrReady) {
           elfldrReady = true;
-          log("elfldr detected from exploit log!", "success");
-          enableAllPayloadButtons();
+          log("elfldr detected!", "success");
+          enablePayloadButtons();
         }
       }
     });
@@ -356,7 +405,8 @@
       .then(function () { return loadJs("psfree/psfree.js", true); })
       .then(function () { return loadJs("payload_map.js", false); })
       .then(function () {
-        log("umtx2 loaded — click JAILBREAK or wait", "success");
+        log("umtx2 loaded — starting exploit NOW", "success");
+        run(false, false);  // <-- THIS WAS MISSING! Start the exploit
         watchConsoleForElfldr();
       })
       .catch(function (e) { log("umtx2 failed: " + e.message, "err"); });
@@ -378,8 +428,8 @@
         if (txt.toLowerCase().indexOf("elfldr") >= 0 || txt.toLowerCase().indexOf("finished") >= 0) {
           if (!elfldrReady) {
             elfldrReady = true;
-            log("elfldr detected from iframe!", "success");
-            enableAllPayloadButtons();
+            log("elfldr detected!", "success");
+            enablePayloadButtons();
           }
         }
       } else if (d.bridgeType === "error") {
@@ -387,8 +437,8 @@
       } else if (d.bridgeType === "elfldr-up") {
         if (!elfldrReady) {
           elfldrReady = true;
-          log("elfldr detected by bridge!", "success");
-          enableAllPayloadButtons();
+          log("elfldr detected!", "success");
+          enablePayloadButtons();
         }
       }
     });
@@ -438,6 +488,20 @@
       };
     }
   }
+
+  // Auto-discover payloads on load
+  discoverPayloads().then(function(){
+    buildPayloadGrid();
+  });
+
+  refreshBtn.onclick = function(){
+    refreshBtn.textContent = "...";
+    discoverPayloads().then(function(){
+      buildPayloadGrid();
+      if (elfldrReady) enablePayloadButtons();
+      refreshBtn.textContent = "REFRESH";
+    });
+  };
 
   if (resume && !armed) {
     log("resuming after reload...", "warn");

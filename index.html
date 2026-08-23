@@ -18,24 +18,30 @@
     padding: 14px; gap: 12px;
   }
 
-  /* TOP ROW */
-  #utop {
+  /* TOP SECTION: logo left | payload list right */
+  #umain {
     display: flex; flex-direction: row;
-    align-items: center; justify-content: space-between;
-    flex-shrink: 0; gap: 16px;
+    flex: 1; min-height: 0;
+    gap: 14px;
   }
-  #uhead {
-    display: flex; flex-direction: row;
-    align-items: center; gap: 14px;
+
+  /* LEFT: logo + jb button */
+  #uleft {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 12px;
+    width: 280px; flex-shrink: 0;
   }
   #ulogo {
-    width: 120px; height: auto;
-    border-radius: 10px;
+    width: 260px; height: auto;
+    border-radius: 12px;
     border: 1px solid #333;
   }
-  #uheadtxt { display: flex; flex-direction: column; gap: 3px; }
-  #ubyline { font-size: 15px; color: #8fa0b3; }
-  #ufwline { font-size: 16px; color: #9fb1c3; }
+  #ubyline {
+    font-size: 15px; color: #8fa0b3;
+  }
+  #ufwline {
+    font-size: 16px; color: #9fb1c3;
+  }
   #ufwline b { color: #fff; }
 
   #ujb {
@@ -43,6 +49,8 @@
     border-radius: 12px; background: #1a3a1a; border: 2px solid #2d5a2d;
     color: #7fd88a; font-weight: 800; font-size: 20px; letter-spacing: 2px;
     cursor: pointer; text-decoration: none;
+    width: 100%;
+    text-align: center;
   }
   #ujb:hover { background: #224422; }
   #ujb.disabled {
@@ -52,11 +60,15 @@
   #ujb.running {
     opacity: 0.6; cursor: wait;
   }
+  #ujb.elfldr-ready {
+    background: #1a2a3a; border-color: #2d4a5a; color: #9fc7ff;
+    cursor: not-allowed;
+  }
 
-  /* MIDDLE: payload grid - 2 columns */
-  #upayloads {
+  /* RIGHT: payload list (single column) */
+  #uright {
     flex: 1;
-    min-height: 0;
+    min-width: 0;
     display: flex; flex-direction: column;
     background: #0a0a0a; border: 1px solid #222; border-radius: 10px;
     padding: 10px; gap: 8px;
@@ -66,7 +78,7 @@
     display: flex; justify-content: space-between; align-items: center;
     flex-shrink: 0;
   }
-  #upayloads h3 {
+  #uright h3 {
     font-size: 16px; color: #888; letter-spacing: 1px;
   }
   #refresh-payloads {
@@ -75,35 +87,35 @@
     font-size: 13px; font-weight: 700; cursor: pointer;
   }
   #refresh-payloads:hover { background: #22224a; }
-  #payload-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
+  #payload-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
     overflow-y: auto;
   }
-  .payload-slot {
+  .payload-item {
     display: flex; align-items: center; justify-content: space-between;
     background: #111; border: 1px solid #2a2a2a; border-radius: 8px;
-    padding: 10px 14px; min-height: 48px;
+    padding: 10px 14px; min-height: 44px;
   }
-  .payload-slot.empty {
+  .payload-item.empty {
     opacity: 0.25;
   }
-  .payload-slot-name {
+  .payload-name {
     font-size: 14px; color: #ccc; font-family: monospace;
     word-break: break-all; line-height: 1.3;
   }
-  .payload-slot-btn {
+  .payload-btn {
     background: #1a3a1a; color: #7fd88a; border: 1px solid #2d5a2d;
-    border-radius: 6px; padding: 6px 16px;
+    border-radius: 6px; padding: 6px 18px;
     font-size: 13px; font-weight: 700; cursor: pointer;
-    white-space: nowrap; margin-left: 8px; flex-shrink: 0;
+    white-space: nowrap; margin-left: 10px; flex-shrink: 0;
   }
-  .payload-slot-btn:hover { background: #224422; }
-  .payload-slot-btn:disabled {
+  .payload-btn:hover { background: #224422; }
+  .payload-btn:disabled {
     background: #1a1a1a; color: #444; border-color: #333; cursor: not-allowed;
   }
-  .payload-slot-btn.sent {
+  .payload-btn.sent {
     background: #1a2a3a; color: #9fc7ff; border-color: #2d4a5a;
   }
 
@@ -144,23 +156,21 @@
 <iframe id="extframe" sandbox="allow-scripts allow-same-origin"></iframe>
 
 <div id="uwrap">
-  <div id="utop">
-    <div id="uhead">
+  <div id="umain">
+    <div id="uleft">
       <img id="ulogo" src="logo.jpg" alt="PS5" onerror="this.style.display='none'"/>
-      <div id="uheadtxt">
-        <div id="ubyline">by InsideMatrixDev</div>
-        <div id="ufwline">detecting firmware...</div>
-      </div>
+      <div id="ubyline">by InsideMatrixDev</div>
+      <div id="ufwline">detecting firmware...</div>
+      <button id="ujb" class="disabled">JAILBREAK</button>
     </div>
-    <button id="ujb" class="disabled">JAILBREAK</button>
-  </div>
 
-  <div id="upayloads">
-    <div id="upayloads-header">
-      <h3>PAYLOAD SLOTS</h3>
-      <button id="refresh-payloads">REFRESH</button>
+    <div id="uright">
+      <div id="upayloads-header">
+        <h3>PAYLOADS</h3>
+        <button id="refresh-payloads">REFRESH</button>
+      </div>
+      <div id="payload-list"></div>
     </div>
-    <div id="payload-grid"></div>
   </div>
 
   <div id="ulog"></div>
@@ -175,7 +185,7 @@
 
   var logEl = document.getElementById("ulog");
   var uchainEl = document.getElementById("uchain");
-  var payloadGridEl = document.getElementById("payload-grid");
+  var payloadListEl = document.getElementById("payload-list");
   var jbBtn = document.getElementById("ujb");
   var refreshBtn = document.getElementById("refresh-payloads");
   var elfldrReady = false;
@@ -257,31 +267,31 @@
     });
   }
 
-  function buildPayloadGrid() {
-    payloadGridEl.innerHTML = "";
+  function buildPayloadList() {
+    payloadListEl.innerHTML = "";
     var slots = PAYLOADS.length > 0 ? PAYLOADS : [];
     for (var i = 0; i < 18; i++) {
       var p = slots[i] || {name: "", url: ""};
-      var slot = document.createElement("div");
-      slot.className = "payload-slot" + (p.name ? "" : " empty");
+      var row = document.createElement("div");
+      row.className = "payload-item" + (p.name ? "" : " empty");
       var nameSpan = document.createElement("span");
-      nameSpan.className = "payload-slot-name";
+      nameSpan.className = "payload-name";
       nameSpan.textContent = p.name || "slot " + (i + 1);
       var btn = document.createElement("button");
-      btn.className = "payload-slot-btn";
+      btn.className = "payload-btn";
       btn.textContent = p.name ? "SEND" : "-";
       btn.disabled = true;
       if (p.name) {
         btn.onclick = function(idx){ return function(){ sendPayload(idx); }; }(i);
       }
-      slot.appendChild(nameSpan);
-      slot.appendChild(btn);
-      payloadGridEl.appendChild(slot);
+      row.appendChild(nameSpan);
+      row.appendChild(btn);
+      payloadListEl.appendChild(row);
     }
   }
 
   function enablePayloadButtons() {
-    var btns = payloadGridEl.querySelectorAll(".payload-slot-btn");
+    var btns = payloadListEl.querySelectorAll(".payload-btn");
     for (var i = 0; i < btns.length; i++) {
       if (PAYLOADS[i] && PAYLOADS[i].name) btns[i].disabled = false;
     }
@@ -303,7 +313,7 @@
   function sendPayload(idx) {
     var p = PAYLOADS[idx];
     if (!p || !p.name || !p.url) return;
-    var btns = payloadGridEl.querySelectorAll(".payload-slot-btn");
+    var btns = payloadListEl.querySelectorAll(".payload-btn");
     var btn = btns[idx];
     btn.disabled = true;
     btn.textContent = "...";
@@ -321,7 +331,7 @@
     }).then(function(ok){
       if (ok) {
         btn.textContent = "OK";
-        btn.className = "payload-slot-btn sent";
+        btn.className = "payload-btn sent";
         btn.disabled = true;
       } else {
         btn.disabled = false;
@@ -330,34 +340,99 @@
     });
   }
 
-  /* ===== SEND VIA HTTP POST TO ELFLDR ===== */
+  /* ===== GET SYSCALL FUNCTION ===== */
+  function getSyscall() {
+    if (typeof syscall === "function") return syscall;
+    if (typeof window.syscall === "function") return window.syscall;
+    if (typeof window.sc === "function") return window.sc;
+    for (var key in window) {
+      if (typeof window[key] === "function" && key.toLowerCase() === "syscall") {
+        return window[key];
+      }
+    }
+    return null;
+  }
+
+  /* ===== CHECK IF ELFLDR IS ALREADY RUNNING ===== */
+  function checkElfldrRunning() {
+    return new Promise(function(resolve){
+      var sc = getSyscall();
+      // Method 1: syscall socket connect
+      if (sc) {
+        try {
+          var fd = sc("socket", 2, 1, 0);
+          if (fd >= 0) {
+            var addr = new Uint8Array(16);
+            addr[0] = 0x00; addr[1] = 0x02;
+            addr[2] = (9021 >> 8) & 0xFF; addr[3] = 9021 & 0xFF;
+            addr[4] = 127; addr[5] = 0; addr[6] = 0; addr[7] = 1;
+            var conn = sc("connect", fd, addr, 16);
+            sc("close", fd);
+            if (conn >= 0) {
+              resolve(true);
+              return;
+            }
+          }
+        } catch (e) {}
+      }
+      // Method 2: XHR POST
+      try {
+        var req = new XMLHttpRequest();
+        req.open("POST", "http://127.0.0.1:9021/", false);
+        req.timeout = 2000;
+        req.send(new ArrayBuffer(0));
+        if (req.status === 200 || req.status === 0) {
+          resolve(true);
+          return;
+        }
+      } catch (e) {}
+      resolve(false);
+    });
+  }
+
+  /* ===== SEND VIA SYSCALLS (TCP socket) ===== */
   function sendOnePayload(bytes, name) {
     return new Promise(function(resolve){
+      var sc = getSyscall();
+      if (!sc) {
+        log("syscalls not available — exploit may not have completed", "err");
+        resolve(false);
+        return;
+      }
       try {
-        log("Sending " + name + " to elfldr :9021 ...", "info");
-        var req = new XMLHttpRequest();
-        req.open("POST", "http://127.0.0.1:9021/", true);
-        req.timeout = 30000;
-        req.onload = function(){
-          log(name + " POST status: " + req.status, req.status === 200 || req.status === 0 ? "success" : "err");
-          if (req.status === 200 || req.status === 0) {
+        log("Opening socket to 127.0.0.1:9021 ...", "info");
+        var fd = sc("socket", 2, 1, 0);
+        if (fd < 0) { log("socket() failed: " + fd, "err"); resolve(false); return; }
+
+        var addr = new Uint8Array(16);
+        addr[0] = 0x00; addr[1] = 0x02;
+        addr[2] = (9021 >> 8) & 0xFF; addr[3] = 9021 & 0xFF;
+        addr[4] = 127; addr[5] = 0; addr[6] = 0; addr[7] = 1;
+
+        log("Connecting to elfldr ...", "info");
+        var conn = sc("connect", fd, addr, 16);
+        if (conn < 0) { sc("close", fd); log("connect() failed: " + conn, "err"); resolve(false); return; }
+
+        log("Sending " + name + " (" + bytes.byteLength + " bytes) ...", "info");
+        var u8 = new Uint8Array(bytes);
+        var sent = 0;
+        function writeChunk(){
+          if (sent >= u8.length) {
+            sc("close", fd);
             log(name + " sent successfully!", "success");
             resolve(true);
-          } else {
-            resolve(false);
+            return;
           }
-        };
-        req.onerror = function(){
-          log(name + " POST error (network/CORS)", "err");
-          resolve(false);
-        };
-        req.ontimeout = function(){
-          log(name + " POST timeout", "err");
-          resolve(false);
-        };
-        req.send(bytes);
+          var end = Math.min(sent + 65536, u8.length);
+          var chunk = u8.subarray(sent, end);
+          var w = sc("write", fd, chunk, chunk.length);
+          if (w < 0) { sc("close", fd); log("write() failed: " + w, "err"); resolve(false); return; }
+          sent += w;
+          setTimeout(writeChunk, 0);
+        }
+        writeChunk();
       } catch (e) {
-        log(name + " POST exception: " + e.message, "err");
+        log(name + " send exception: " + e.message, "err");
         resolve(false);
       }
     });
@@ -475,7 +550,7 @@
       log("chain: " + name + " — ready", "success");
       jbBtn.className = "";
       jbBtn.onclick = function(){
-        if (armed) return;
+        if (armed) { log("jailbreak already running — do not click again!", "err"); return; }
         armed = true;
         jbBtn.className = "running";
         jbBtn.textContent = "RUNNING...";
@@ -486,14 +561,28 @@
     }
   }
 
+  // Auto-discover payloads + check if elfldr already running
   discoverPayloads().then(function(){
-    buildPayloadGrid();
+    buildPayloadList();
+    // Check if elfldr is already running from a previous session
+    checkElfldrRunning().then(function(running){
+      if (running) {
+        elfldrReady = true;
+        log("elfldr already running on :9021 — payloads unlocked", "success");
+        enablePayloadButtons();
+        jbBtn.className = "elfldr-ready";
+        jbBtn.textContent = "ELFLDR READY";
+        jbBtn.disabled = true;
+      } else {
+        log("elfldr not running — click JAILBREAK to start", "info");
+      }
+    });
   });
 
   refreshBtn.onclick = function(){
     refreshBtn.textContent = "...";
     discoverPayloads().then(function(){
-      buildPayloadGrid();
+      buildPayloadList();
       if (elfldrReady) enablePayloadButtons();
       refreshBtn.textContent = "REFRESH";
     });

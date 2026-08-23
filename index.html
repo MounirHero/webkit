@@ -9,13 +9,13 @@
   html, body {
     width: 100%; height: 100%;
     background: #000; color: #e8e8e8;
-    font: 15px/1.4 "Segoe UI", system-ui, sans-serif;
+    font: 18px/1.4 "Segoe UI", system-ui, sans-serif;
     overflow: hidden;
   }
   #uwrap {
     display: flex; flex-direction: column;
     width: 100%; height: 100%;
-    padding: 12px; gap: 10px;
+    padding: 14px; gap: 12px;
   }
 
   /* TOP ROW */
@@ -26,21 +26,22 @@
   }
   #uhead {
     display: flex; flex-direction: row;
-    align-items: center; gap: 12px;
+    align-items: center; gap: 14px;
   }
   #ulogo {
-    width: min(80px, 12vw); height: auto;
-    border-radius: 8px;
+    width: 120px; height: auto;
+    border-radius: 10px;
+    border: 1px solid #333;
   }
-  #uheadtxt { display: flex; flex-direction: column; gap: 2px; }
-  #ubyline { font-size: 11px; color: #8fa0b3; }
-  #ufwline { font-size: 12px; color: #9fb1c3; }
+  #uheadtxt { display: flex; flex-direction: column; gap: 3px; }
+  #ubyline { font-size: 15px; color: #8fa0b3; }
+  #ufwline { font-size: 16px; color: #9fb1c3; }
   #ufwline b { color: #fff; }
 
   #ujb {
-    padding: 10px 36px;
-    border-radius: 10px; background: #1a3a1a; border: 2px solid #2d5a2d;
-    color: #7fd88a; font-weight: 800; font-size: 16px; letter-spacing: 2px;
+    padding: 14px 48px;
+    border-radius: 12px; background: #1a3a1a; border: 2px solid #2d5a2d;
+    color: #7fd88a; font-weight: 800; font-size: 20px; letter-spacing: 2px;
     cursor: pointer; text-decoration: none;
   }
   #ujb:hover { background: #224422; }
@@ -52,13 +53,13 @@
     opacity: 0.6; cursor: wait;
   }
 
-  /* MIDDLE: payload grid */
+  /* MIDDLE: payload grid - 2 columns */
   #upayloads {
     flex: 1;
     min-height: 0;
     display: flex; flex-direction: column;
     background: #0a0a0a; border: 1px solid #222; border-radius: 10px;
-    padding: 8px; gap: 6px;
+    padding: 10px; gap: 8px;
     overflow: hidden;
   }
   #upayloads-header {
@@ -66,37 +67,37 @@
     flex-shrink: 0;
   }
   #upayloads h3 {
-    font-size: 12px; color: #888; letter-spacing: 1px;
+    font-size: 16px; color: #888; letter-spacing: 1px;
   }
   #refresh-payloads {
     background: #1a1a3a; color: #9fc7ff; border: 1px solid #2d3a5a;
-    border-radius: 4px; padding: 3px 8px;
-    font-size: 10px; font-weight: 700; cursor: pointer;
+    border-radius: 6px; padding: 6px 14px;
+    font-size: 13px; font-weight: 700; cursor: pointer;
   }
   #refresh-payloads:hover { background: #22224a; }
   #payload-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 5px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
     overflow-y: auto;
   }
   .payload-slot {
     display: flex; align-items: center; justify-content: space-between;
-    background: #111; border: 1px solid #2a2a2a; border-radius: 6px;
-    padding: 5px 8px; min-height: 32px;
+    background: #111; border: 1px solid #2a2a2a; border-radius: 8px;
+    padding: 10px 14px; min-height: 48px;
   }
   .payload-slot.empty {
     opacity: 0.25;
   }
   .payload-slot-name {
-    font-size: 10px; color: #aaa; font-family: monospace;
+    font-size: 14px; color: #ccc; font-family: monospace;
     word-break: break-all; line-height: 1.3;
   }
   .payload-slot-btn {
     background: #1a3a1a; color: #7fd88a; border: 1px solid #2d5a2d;
-    border-radius: 4px; padding: 3px 8px;
-    font-size: 9px; font-weight: 700; cursor: pointer;
-    white-space: nowrap; margin-left: 4px; flex-shrink: 0;
+    border-radius: 6px; padding: 6px 16px;
+    font-size: 13px; font-weight: 700; cursor: pointer;
+    white-space: nowrap; margin-left: 8px; flex-shrink: 0;
   }
   .payload-slot-btn:hover { background: #224422; }
   .payload-slot-btn:disabled {
@@ -106,13 +107,13 @@
     background: #1a2a3a; color: #9fc7ff; border-color: #2d4a5a;
   }
 
-  /* BOTTOM: log - FIXED HEIGHT, never grows */
+  /* BOTTOM: log - FIXED HEIGHT */
   #ulog, #uchain {
     flex-shrink: 0;
-    height: 120px;
+    height: 140px;
     background: #0a0a0a; border: 1px solid #222; border-radius: 10px;
-    padding: 6px 8px;
-    font: 11px/1.3 "Consolas", "DejaVu Sans Mono", monospace;
+    padding: 8px 10px;
+    font: 13px/1.4 "Consolas", "DejaVu Sans Mono", monospace;
     color: #b9e6b0; white-space: pre-wrap; overflow-y: auto;
   }
   #ulog .err { color: #ff9a8a; }
@@ -124,7 +125,7 @@
   }
   #uchain #console {
     width: 100%; height: 100%;
-    font: 11px/1.3 "Consolas", "DejaVu Sans Mono", monospace;
+    font: 13px/1.4 "Consolas", "DejaVu Sans Mono", monospace;
     color: #b9e6b0; white-space: pre-wrap; overflow-y: auto;
   }
   #uchain #console .LOG-INFO,
@@ -145,7 +146,7 @@
 <div id="uwrap">
   <div id="utop">
     <div id="uhead">
-      <img id="ulogo" src="logo.jpg" alt="PS5"/>
+      <img id="ulogo" src="logo.jpg" alt="PS5" onerror="this.style.display='none'"/>
       <div id="uheadtxt">
         <div id="ubyline">by InsideMatrixDev</div>
         <div id="ufwline">detecting firmware...</div>
@@ -214,7 +215,7 @@
 
   function has(list, fw) { for (var i=0;i<list.length;i++) if (list[i]===fw) return true; return false; }
 
-  /* ===== AUTO-DISCOVER PAYLOADS via HEAD probe ===== */
+  /* ===== AUTO-DISCOVER PAYLOADS ===== */
   var PAYLOAD_CANDIDATES = [
     "shadowmountplus.elf", "OnionHEN.elf",
     "PS5-Game-Compressor_v1.0.4.elf", "PoorDS4rc38_v0.1.0-rc38.elf",
@@ -242,13 +243,14 @@
           checked++;
           if (r.status === 200) found.push({name: name, url: "payload/" + name});
           if (checked >= PAYLOAD_CANDIDATES.length) {
+            found.sort(function(a,b){ return a.name.localeCompare(b.name); });
             PAYLOADS = found;
             log("found " + PAYLOADS.length + " payloads in /payload/", "success");
             resolve();
           }
         };
-        r.onerror = function(){ checked++; if (checked >= PAYLOAD_CANDIDATES.length) { PAYLOADS = found; resolve(); } };
-        r.ontimeout = function(){ checked++; if (checked >= PAYLOAD_CANDIDATES.length) { PAYLOADS = found; resolve(); } };
+        r.onerror = function(){ checked++; if (checked >= PAYLOAD_CANDIDATES.length) { found.sort(function(a,b){ return a.name.localeCompare(b.name); }); PAYLOADS = found; resolve(); } };
+        r.ontimeout = function(){ checked++; if (checked >= PAYLOAD_CANDIDATES.length) { found.sort(function(a,b){ return a.name.localeCompare(b.name); }); PAYLOADS = found; resolve(); } };
         r.timeout = 5000;
         r.send();
       });
@@ -337,25 +339,25 @@
         req.open("POST", "http://127.0.0.1:9021/", true);
         req.timeout = 30000;
         req.onload = function(){
+          log(name + " POST status: " + req.status, req.status === 200 || req.status === 0 ? "success" : "err");
           if (req.status === 200 || req.status === 0) {
             log(name + " sent successfully!", "success");
             resolve(true);
           } else {
-            log(name + " send failed: HTTP " + req.status, "err");
             resolve(false);
           }
         };
         req.onerror = function(){
-          log(name + " send error (network)", "err");
+          log(name + " POST error (network/CORS)", "err");
           resolve(false);
         };
         req.ontimeout = function(){
-          log(name + " send timeout", "err");
+          log(name + " POST timeout", "err");
           resolve(false);
         };
         req.send(bytes);
       } catch (e) {
-        log(name + " send exception: " + e.message, "err");
+        log(name + " POST exception: " + e.message, "err");
         resolve(false);
       }
     });
@@ -385,7 +387,6 @@
   function runUx() {
     log("loading umtx2 chain...", "info");
     setBase("ux/");
-    // Switch log display
     logEl.style.display = "none";
     uchainEl.style.display = "block";
     uchainEl.innerHTML =
@@ -485,7 +486,6 @@
     }
   }
 
-  // Auto-discover payloads on load
   discoverPayloads().then(function(){
     buildPayloadGrid();
   });

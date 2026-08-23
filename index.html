@@ -92,7 +92,6 @@
   .payload-btn:hover { background: #224422; }
   .payload-btn:disabled { background: #1a1a1a; color: #444; border-color: #333; cursor: not-allowed; }
   .payload-btn.sent { background: #1a2a3a; color: #9fc7ff; border-color: #2d4a5a; }
-  .payload-btn.test { background: #3a3a1a; color: #ffd479; border-color: #5a5a2d; }
 
   #ulog, #uchain {
     flex-shrink: 0;
@@ -284,15 +283,15 @@
 
   function sendPayload(idx) {
     var p = PAYLOADS[idx];
-    if (!p || !p.name || !p.url) return;
+    if (!p || !p.name || !p.url) { log("No payload at slot " + idx, "err"); return; }
     var btns = payloadListEl.querySelectorAll(".payload-btn");
     var btn = btns[idx];
     btn.disabled = true;
     btn.textContent = "...";
-    log("Loading " + p.name + " ...", "info");
+    log("Loading " + p.name + " ...", "warn");
     fetchPayload(p.url).then(function(buf){
       if (!buf) {
-        log("Could not load " + p.name, "err");
+        log("Could not load " + p.name + " from " + p.url, "err");
         btn.disabled = false;
         btn.textContent = "SEND";
         return;
@@ -306,9 +305,14 @@
         btn.className = "payload-btn sent";
         btn.disabled = true;
       } else {
+        log(p.name + " send FAILED", "err");
         btn.disabled = false;
         btn.textContent = "SEND";
       }
+    }).catch(function(e){
+      log(p.name + " exception: " + e.message, "err");
+      btn.disabled = false;
+      btn.textContent = "SEND";
     });
   }
 
@@ -343,134 +347,57 @@
           }
         } catch (e) {}
       }
-      try {
-        var req = new XMLHttpRequest();
-        req.open("POST", "http://127.0.0.1:9021/", false);
-        req.timeout = 2000;
-        req.send(new ArrayBuffer(0));
-        if (req.status === 200 || req.status === 0) { resolve(true); return; }
-      } catch (e) {}
       resolve(false);
     });
   }
 
-  /* ===== SEND PAYLOAD - MULTI METHOD ===== */
+  /* ===== SEND PAYLOAD ===== */
   function sendOnePayload(bytes, name) {
     return new Promise(function(resolve){
-      log("=== Sending " + name + " ===", "warn");
-
-      // Method 1: HTTP POST via XMLHttpRequest (most compatible)
-      function tryXHR() {
-        return new Promise(function(res){
-          log("Method 1: XHR POST to 127.0.0.1:9021", "info");
-          try {
-            var req = new XMLHttpRequest();
-            req.open("POST", "http://127.0.0.1:9021/", true);
-            req.timeout = 30000;
-            req.onload = function(){
-              log("XHR status: " + req.status, req.status === 200 || req.status === 0 ? "success" : "err");
-              if (req.status === 200 || req.status === 0) {
-                log(name + " sent via XHR!", "success");
-                res(true);
-              } else {
-                res(false);
-              }
-            };
-            req.onerror = function(){
-              log("XHR error (CORS/network)", "err");
-              res(false);
-            };
-            req.ontimeout = function(){
-              log("XHR timeout", "err");
-              res(false);
-            };
-            req.send(bytes);
-          } catch (e) {
-            log("XHR exception: " + e.message, "err");
-            res(false);
-          }
-        });
+      var sc = getSyscall();
+      if (!sc) {
+        log("ERROR: syscall() not available. Is the exploit complete?", "err");
+        resolve(false);
+        return;
       }
+      try {
+        log("syscall socket() ...", "warn");
+        var fd = sc("socket", 2, 1, 0);
+        if (fd < 0) { log("socket() failed: " + fd, "err"); resolve(false); return; }
+        log("socket fd=" + fd, "success");
 
-      // Method 2: fetch() with no-cors
-      function tryFetch() {
-        return new Promise(function(res){
-          log("Method 2: fetch() no-cors", "info");
-          try {
-            fetch("http://127.0.0.1:9021/", {
-              method: "POST",
-              mode: "no-cors",
-              body: bytes
-            }).then(function(){
-              log(name + " sent via fetch!", "success");
-              res(true);
-            }).catch(function(e){
-              log("fetch error: " + e.message, "err");
-              res(false);
-            });
-          } catch (e) {
-            log("fetch exception: " + e.message, "err");
-            res(false);
+        var addr = new Uint8Array(16);
+        addr[0] = 0x00; addr[1] = 0x02;
+        addr[2] = (9021 >> 8) & 0xFF; addr[3] = 9021 & 0xFF;
+        addr[4] = 127; addr[5] = 0; addr[6] = 0; addr[7] = 1;
+
+        log("syscall connect() to 127.0.0.1:9021 ...", "warn");
+        var conn = sc("connect", fd, addr, 16);
+        if (conn < 0) { sc("close", fd); log("connect() failed: " + conn, "err"); resolve(false); return; }
+        log("connect() OK", "success");
+
+        log("Sending " + bytes.byteLength + " bytes ...", "warn");
+        var u8 = new Uint8Array(bytes);
+        var sent = 0;
+        function writeChunk(){
+          if (sent >= u8.length) {
+            sc("close", fd);
+            log(name + " SENT!", "success");
+            resolve(true);
+            return;
           }
-        });
-      }
-
-      // Method 3: syscall socket (if available after exploit)
-      function trySyscall() {
-        return new Promise(function(res){
-          var sc = getSyscall();
-          if (!sc) { log("Method 3: syscalls not available", "err"); res(false); return; }
-          log("Method 3: syscall socket", "info");
-          try {
-            var fd = sc("socket", 2, 1, 0);
-            if (fd < 0) { log("socket() failed: " + fd, "err"); res(false); return; }
-            var addr = new Uint8Array(16);
-            addr[0] = 0x00; addr[1] = 0x02;
-            addr[2] = (9021 >> 8) & 0xFF; addr[3] = 9021 & 0xFF;
-            addr[4] = 127; addr[5] = 0; addr[6] = 0; addr[7] = 1;
-            var conn = sc("connect", fd, addr, 16);
-            if (conn < 0) { sc("close", fd); log("connect() failed: " + conn, "err"); res(false); return; }
-            var u8 = new Uint8Array(bytes);
-            var sent = 0;
-            function writeChunk(){
-              if (sent >= u8.length) {
-                sc("close", fd);
-                log(name + " sent via syscall!", "success");
-                res(true);
-                return;
-              }
-              var end = Math.min(sent + 65536, u8.length);
-              var chunk = u8.subarray(sent, end);
-              var w = sc("write", fd, chunk, chunk.length);
-              if (w < 0) { sc("close", fd); log("write() failed: " + w, "err"); res(false); return; }
-              sent += w;
-              setTimeout(writeChunk, 0);
-            }
-            writeChunk();
-          } catch (e) {
-            log("syscall exception: " + e.message, "err");
-            res(false);
-          }
-        });
-      }
-
-      // Try methods in order
-      tryXHR().then(function(ok){
-        if (ok) { resolve(true); return; }
-        return tryFetch();
-      }).then(function(ok){
-        if (ok === true) { resolve(true); return; }
-        if (ok === false) {
-          return trySyscall();
+          var end = Math.min(sent + 65536, u8.length);
+          var chunk = u8.subarray(sent, end);
+          var w = sc("write", fd, chunk, chunk.length);
+          if (w < 0) { sc("close", fd); log("write() failed: " + w, "err"); resolve(false); return; }
+          sent += w;
+          setTimeout(writeChunk, 0);
         }
-      }).then(function(ok){
-        if (ok === true) {
-          resolve(true);
-        } else {
-          log("ALL METHODS FAILED for " + name, "err");
-          resolve(false);
-        }
-      });
+        writeChunk();
+      } catch (e) {
+        log("send exception: " + e.message, "err");
+        resolve(false);
+      }
     });
   }
 
@@ -496,7 +423,7 @@
 
   /* ===== umtx2 ===== */
   function runUx() {
-    log("loading umtx2 chain...", "info");
+    log("loading umtx2 chain...", "warn");
     setBase("ux/");
     logEl.style.display = "none";
     uchainEl.style.display = "block";
@@ -522,7 +449,7 @@
 
   /* ===== poops/p2jb via hidden iframe ===== */
   function runExt(url, name) {
-    log("loading " + name + " chain...", "info");
+    log("loading " + name + " chain...", "warn");
     var frame = document.getElementById("extframe");
     frame.src = url;
     window.addEventListener("message", function onMsg(e){
@@ -532,7 +459,7 @@
         var txt = d.text || d.msg || d.item || "";
         var isErr = d.progress === -1 || txt.toLowerCase().indexOf("error") >= 0;
         var isSuccess = txt.toLowerCase().indexOf("success") >= 0 || txt.toLowerCase().indexOf("done") >= 0;
-        log("[" + (d.chain||"ext") + "] " + txt, isErr ? "err" : (isSuccess ? "success" : "info"));
+        log("[" + (d.chain||"ext") + "] " + txt, isErr ? "err" : (isSuccess ? "success" : "warn"));
         if (txt.toLowerCase().indexOf("elfldr") >= 0 || txt.toLowerCase().indexOf("finished") >= 0) {
           if (!elfldrReady) {
             elfldrReady = true;
@@ -608,7 +535,7 @@
         jbBtn.textContent = "ELFLDR READY";
         jbBtn.disabled = true;
       } else {
-        log("elfldr not running — click JAILBREAK", "info");
+        log("elfldr not running — click JAILBREAK", "warn");
       }
     });
   });

@@ -3,7 +3,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Unified WebKit Exploit</title>
+<title>Unified WebKit Exploit + Relapse</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body {
@@ -19,84 +19,45 @@
   }
 
   #umain {
-    display: flex; flex-direction: row;
-    flex: 1; min-height: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    min-height: 0;
     gap: 14px;
   }
 
   #uleft {
     display: flex; flex-direction: column;
-    align-items: center; gap: 12px;
-    width: 280px; flex-shrink: 0;
+    align-items: center; gap: 16px;
+    width: 100%;
+    max-width: 420px;
   }
   #ulogo {
     width: 260px; height: auto;
     border-radius: 12px;
     border: 1px solid #333;
   }
-  #ubyline { font-size: 15px; color: #8fa0b3; }
-  #ufwline { font-size: 16px; color: #9fb1c3; }
+  #ubyline { font-size: 15px; color: #8fa0b3; text-align: center; }
+  #ufwline { font-size: 16px; color: #9fb1c3; text-align: center; }
   #ufwline b { color: #fff; }
 
   #ujb {
-    padding: 14px 48px;
+    padding: 16px 64px;
     border-radius: 12px; background: #1a3a1a; border: 2px solid #2d5a2d;
-    color: #7fd88a; font-weight: 800; font-size: 20px; letter-spacing: 2px;
+    color: #7fd88a; font-weight: 800; font-size: 22px; letter-spacing: 2px;
     cursor: pointer; text-decoration: none;
-    width: 100%; text-align: center;
+    min-width: 280px; text-align: center;
   }
   #ujb:hover { background: #224422; }
   #ujb.disabled { background: #1a1a1a; border-color: #333; color: #555; cursor: not-allowed; }
   #ujb.running { opacity: 0.6; cursor: wait; }
   #ujb.elfldr-ready { background: #1a2a3a; border-color: #2d4a5a; color: #9fc7ff; cursor: not-allowed; }
 
-  #uright {
-    flex: 1; min-width: 0;
-    display: flex; flex-direction: column;
-    background: #0a0a0a; border: 1px solid #222; border-radius: 10px;
-    padding: 10px; gap: 8px;
-    overflow: hidden;
-  }
-  #upayloads-header {
-    display: flex; justify-content: space-between; align-items: center;
-    flex-shrink: 0;
-  }
-  #uright h3 { font-size: 16px; color: #888; letter-spacing: 1px; }
-  #refresh-payloads {
-    background: #1a1a3a; color: #9fc7ff; border: 1px solid #2d3a5a;
-    border-radius: 6px; padding: 6px 14px;
-    font-size: 13px; font-weight: 700; cursor: pointer;
-  }
-  #refresh-payloads:hover { background: #22224a; }
-  #payload-list {
-    display: flex; flex-direction: column;
-    gap: 6px;
-    overflow-y: auto;
-  }
-  .payload-item {
-    display: flex; align-items: center; justify-content: space-between;
-    background: #111; border: 1px solid #2a2a2a; border-radius: 8px;
-    padding: 10px 14px; min-height: 44px;
-  }
-  .payload-item.empty { opacity: 0.25; }
-  .payload-name {
-    font-size: 14px; color: #ccc; font-family: monospace;
-    word-break: break-all; line-height: 1.3;
-  }
-  .payload-btn {
-    background: #1a3a1a; color: #7fd88a; border: 1px solid #2d5a2d;
-    border-radius: 6px; padding: 6px 14px;
-    font-size: 12px; font-weight: 700; cursor: pointer;
-    white-space: nowrap; margin-left: 8px; flex-shrink: 0;
-  }
-  .payload-btn:hover { background: #224422; }
-  .payload-btn:disabled { background: #1a1a1a; color: #444; border-color: #333; cursor: not-allowed; }
-  .payload-btn.sent { background: #1a2a3a; color: #9fc7ff; border-color: #2d4a5a; }
-
-  /* LOG - always visible, fixed height */
   #ulog {
     flex-shrink: 0;
-    height: 140px;
+    height: 160px;
     background: #0a0a0a; border: 1px solid #222; border-radius: 10px;
     padding: 8px 10px;
     font: 13px/1.4 "Consolas", "DejaVu Sans Mono", monospace;
@@ -107,7 +68,7 @@
   #ulog .warn { color: #ffd479; }
   #ulog .info { color: #9fc7ff; }
 
-  /* umtx2 console - hidden, we redirect its output to #ulog */
+  /* umtx2 / relapse console - hidden, we redirect output to #ulog */
   #uchain {
     display: none !important;
   }
@@ -130,14 +91,6 @@
       <div id="ufwline">detecting firmware...</div>
       <button id="ujb" class="disabled">JAILBREAK</button>
     </div>
-
-    <div id="uright">
-      <div id="upayloads-header">
-        <h3>PAYLOADS</h3>
-        <button id="refresh-payloads">REFRESH</button>
-      </div>
-      <div id="payload-list"></div>
-    </div>
   </div>
 
   <div id="ulog"></div>
@@ -147,16 +100,12 @@
 <script>
 (function () {
   var UX = ["1.00","1.01","1.02","1.05","1.10","1.11","1.12","1.13","1.14","2.00","2.20","2.25","2.26","2.30","2.50","2.70","3.00","3.10","3.20","3.21","4.00","4.02","4.03","4.50","4.51","5.00","5.02","5.10","5.50"];
-  var POOPS = ["7.00","7.01","7.02","7.40","7.50","7.51","7.55","7.60","7.61","8.00","8.01","8.03","8.20","8.30","8.40","8.50","8.60","9.00","9.20","9.40","9.60","10.00","10.01","10.20","10.40","10.60","11.00","11.20","11.40","11.60","12.00"];
-  var P2JB  = ["12.00","12.02","12.40","12.50","12.70"];
+  var RELAPSE = ["7.00","7.01","7.20","7.40","7.60","7.61","8.00","8.20","8.40","8.60","9.00","9.20","9.40","9.60","10.00","10.01","10.20","10.40","10.60","11.00","11.20","11.60","12.00","12.02","12.20","12.40","12.60","12.70","13.00","13.20","13.40","13.42","13.60"];
 
   var logEl = document.getElementById("ulog");
-  var payloadListEl = document.getElementById("payload-list");
   var jbBtn = document.getElementById("ujb");
-  var refreshBtn = document.getElementById("refresh-payloads");
   var elfldrReady = false;
   var armed = false;
-  var PAYLOADS = [];
 
   function log(msg, cls) {
     var d = new Date();
@@ -167,8 +116,11 @@
     logEl.appendChild(line);
     logEl.scrollTop = logEl.scrollHeight;
   }
+  window.mainLog = log;
 
   function setBase(href) {
+    var existing = document.querySelector("base");
+    if (existing) existing.remove();
     var b = document.createElement("base");
     b.href = href;
     document.head.appendChild(b);
@@ -191,236 +143,10 @@
 
   function has(list, fw) { for (var i=0;i<list.length;i++) if (list[i]===fw) return true; return false; }
 
-  /* ===== AUTO-DISCOVER PAYLOADS ===== */
-  var PAYLOAD_CANDIDATES = [
-    "shadowmountplus.elf", "OnionHEN.elf",
-    "PS5-Game-Compressor_v1.0.4.elf", "PoorDS4rc38_v0.1.0-rc38.elf",
-    "etaHEN-2.6B.bin", "etaHEN_v2.5B.bin",
-    "ftpsrv_drakmor_v1.6-ng-test2.elf", "garlic-savemgr_v1.13.elf",
-    "kstuff-lite_EchoStretch_v1.10.elf", "lapy_jb_daemon.elf",
-    "nanoDNS_v0.4.elf", "pegasus-dl_v1.7.0.elf",
-    "pldmgr_v0.5.1.elf", "ps5-app-dumper_v1.11.elf",
-    "ps5-fan-control_v0.3.elf", "ps5-linux-loader_v2.4.elf",
-    "ps5-wallpaper-modd_v1.0.elf",
-    "elfldr.elf", "ftpsrv.elf", "kstuff.elf", "etaHEN.elf",
-    "ps5debug.elf", "orbisdev.elf", "linux-loader.elf",
-    "linux-1gb.elf", "linux-2gb.elf", "linux-3gb.elf", "linux-4gb.elf",
-    "payload1.elf", "payload2.elf", "payload3.elf", "test.elf"
-  ];
-
-  function discoverPayloads() {
-    return new Promise(function(resolve){
-      var found = [];
-      var checked = 0;
-      PAYLOAD_CANDIDATES.forEach(function(name){
-        var r = new XMLHttpRequest();
-        r.open("HEAD", "payload/" + name, true);
-        r.onload = function(){
-          checked++;
-          if (r.status === 200) found.push({name: name, url: "payload/" + name});
-          if (checked >= PAYLOAD_CANDIDATES.length) {
-            found.sort(function(a,b){ return a.name.localeCompare(b.name); });
-            PAYLOADS = found;
-            log("found " + PAYLOADS.length + " payloads in /payload/", "success");
-            resolve();
-          }
-        };
-        r.onerror = function(){ checked++; if (checked >= PAYLOAD_CANDIDATES.length) { found.sort(function(a,b){ return a.name.localeCompare(b.name); }); PAYLOADS = found; resolve(); } };
-        r.ontimeout = function(){ checked++; if (checked >= PAYLOAD_CANDIDATES.length) { found.sort(function(a,b){ return a.name.localeCompare(b.name); }); PAYLOADS = found; resolve(); } };
-        r.timeout = 5000;
-        r.send();
-      });
-    });
-  }
-
-  function buildPayloadList() {
-    payloadListEl.innerHTML = "";
-    var slots = PAYLOADS.length > 0 ? PAYLOADS : [];
-    for (var i = 0; i < 18; i++) {
-      var p = slots[i] || {name: "", url: ""};
-      var row = document.createElement("div");
-      row.className = "payload-item" + (p.name ? "" : " empty");
-      var nameSpan = document.createElement("span");
-      nameSpan.className = "payload-name";
-      nameSpan.textContent = p.name || "slot " + (i + 1);
-      var btn = document.createElement("button");
-      btn.className = "payload-btn";
-      btn.textContent = p.name ? "SEND" : "-";
-      btn.disabled = true;
-      if (p.name) {
-        btn.onclick = function(idx){ return function(){ sendPayload(idx); }; }(i);
-      }
-      row.appendChild(nameSpan);
-      row.appendChild(btn);
-      payloadListEl.appendChild(row);
-    }
-  }
-
-  function enablePayloadButtons() {
-    var btns = payloadListEl.querySelectorAll(".payload-btn");
-    for (var i = 0; i < btns.length; i++) {
-      if (PAYLOADS[i] && PAYLOADS[i].name) btns[i].disabled = false;
-    }
-  }
-
-  function fetchPayload(url) {
-    return new Promise(function(resolve){
-      var req = new XMLHttpRequest();
-      req.open("GET", url, true);
-      req.responseType = "arraybuffer";
-      req.onload = function(){ resolve(req.status === 200 ? req.response : null); };
-      req.onerror = function(){ resolve(null); };
-      req.ontimeout = function(){ resolve(null); };
-      req.timeout = 15000;
-      req.send();
-    });
-  }
-
-  function sendPayload(idx) {
-    var p = PAYLOADS[idx];
-    if (!p || !p.name || !p.url) { log("No payload at slot " + idx, "err"); return; }
-    var btns = payloadListEl.querySelectorAll(".payload-btn");
-    var btn = btns[idx];
-    btn.disabled = true;
-    btn.textContent = "...";
-    log("Loading " + p.name + " ...", "warn");
-    fetchPayload(p.url).then(function(buf){
-      if (!buf) {
-        log("Could not load " + p.name + " from " + p.url, "err");
-        btn.disabled = false;
-        btn.textContent = "SEND";
-        return;
-      }
-      log(p.name + " loaded (" + buf.byteLength + " bytes)", "success");
-      btn.textContent = "->";
-      return sendOnePayload(buf, p.name);
-    }).then(function(ok){
-      if (ok) {
-        btn.textContent = "OK";
-        btn.className = "payload-btn sent";
-        btn.disabled = true;
-      } else {
-        log(p.name + " send FAILED", "err");
-        btn.disabled = false;
-        btn.textContent = "SEND";
-      }
-    }).catch(function(e){
-      log(p.name + " exception: " + e.message, "err");
-      btn.disabled = false;
-      btn.textContent = "SEND";
-    });
-  }
-
-  /* ===== GET SYSCALL FUNCTION ===== */
-  function getSyscall() {
-    if (typeof syscall === "function") return syscall;
-    if (typeof window.syscall === "function") return window.syscall;
-    if (typeof window.sc === "function") return window.sc;
-    for (var key in window) {
-      if (typeof window[key] === "function" && key.toLowerCase() === "syscall") {
-        return window[key];
-      }
-    }
-    return null;
-  }
-
-  /* ===== CHECK IF ELFLDR IS RUNNING ===== */
-  function checkElfldrRunning() {
-    return new Promise(function(resolve){
-      var sc = getSyscall();
-      if (sc) {
-        try {
-          var fd = sc("socket", 2, 1, 0);
-          if (fd >= 0) {
-            var addr = new Uint8Array(16);
-            addr[0] = 0x00; addr[1] = 0x02;
-            addr[2] = (9021 >> 8) & 0xFF; addr[3] = 9021 & 0xFF;
-            addr[4] = 127; addr[5] = 0; addr[6] = 0; addr[7] = 1;
-            var conn = sc("connect", fd, addr, 16);
-            sc("close", fd);
-            if (conn >= 0) { resolve(true); return; }
-          }
-        } catch (e) {}
-      }
-      resolve(false);
-    });
-  }
-
-  /* ===== SEND PAYLOAD ===== */
-  function sendOnePayload(bytes, name) {
-    return new Promise(function(resolve){
-      var sc = getSyscall();
-      if (!sc) {
-        log("ERROR: syscall() not available. Is the exploit complete?", "err");
-        resolve(false);
-        return;
-      }
-      try {
-        log("syscall socket() ...", "warn");
-        var fd = sc("socket", 2, 1, 0);
-        if (fd < 0) { log("socket() failed: " + fd, "err"); resolve(false); return; }
-        log("socket fd=" + fd, "success");
-
-        var addr = new Uint8Array(16);
-        addr[0] = 0x00; addr[1] = 0x02;
-        addr[2] = (9021 >> 8) & 0xFF; addr[3] = 9021 & 0xFF;
-        addr[4] = 127; addr[5] = 0; addr[6] = 0; addr[7] = 1;
-
-        log("syscall connect() to 127.0.0.1:9021 ...", "warn");
-        var conn = sc("connect", fd, addr, 16);
-        if (conn < 0) { sc("close", fd); log("connect() failed: " + conn, "err"); resolve(false); return; }
-        log("connect() OK", "success");
-
-        log("Sending " + bytes.byteLength + " bytes ...", "warn");
-        var u8 = new Uint8Array(bytes);
-        var sent = 0;
-        function writeChunk(){
-          if (sent >= u8.length) {
-            sc("close", fd);
-            log(name + " SENT!", "success");
-            resolve(true);
-            return;
-          }
-          var end = Math.min(sent + 65536, u8.length);
-          var chunk = u8.subarray(sent, end);
-          var w = sc("write", fd, chunk, chunk.length);
-          if (w < 0) { sc("close", fd); log("write() failed: " + w, "err"); resolve(false); return; }
-          sent += w;
-          setTimeout(writeChunk, 0);
-        }
-        writeChunk();
-      } catch (e) {
-        log("send exception: " + e.message, "err");
-        resolve(false);
-      }
-    });
-  }
-
-  /* ===== DETECT ELFLDR FROM LOG ===== */
-  function watchConsoleForElfldr() {
-    var consoleEl = document.getElementById("console");
-    if (!consoleEl) {
-      setTimeout(watchConsoleForElfldr, 500);
-      return;
-    }
-    var observer = new MutationObserver(function(mutations){
-      var text = consoleEl.innerText || consoleEl.textContent || "";
-      if (text.indexOf("elfldr") >= 0 || text.indexOf("Finished, out = 0x0") >= 0 || text.indexOf("Loading ELF file") >= 0) {
-        if (!elfldrReady) {
-          elfldrReady = true;
-          log("elfldr detected!", "success");
-          enablePayloadButtons();
-        }
-      }
-    });
-    observer.observe(consoleEl, { childList: true, subtree: true, characterData: true });
-  }
-
   /* ===== umtx2 ===== */
   function runUx() {
     log("loading umtx2 chain...", "warn");
     setBase("ux/");
-    // Do NOT hide #ulog - keep it visible always
     document.getElementById("uchain").innerHTML =
       '<div id="toast-container" style="display:none"></div>' +
       '<span id="top-bar-text" style="display:none"></span>' +
@@ -436,12 +162,42 @@
       .then(function () {
         log("umtx2 loaded — starting exploit", "success");
         run(false, false);
-        watchConsoleForElfldr();
       })
       .catch(function (e) { log("umtx2 failed: " + e.message, "err"); });
   }
 
-  /* ===== poops/p2jb via hidden iframe ===== */
+  /* ===== Relapse (in-session) ===== */
+  function runRelapse() {
+    log("loading Relapse chain (in-session)...", "warn");
+    if (!document.getElementById("console")) {
+      var c = document.createElement("div");
+      c.id = "console";
+      c.style.display = "none";
+      document.body.appendChild(c);
+    }
+    setBase("relapse/");
+    window.alert = function (m) { log("alert: " + m, "warn"); };
+    window.confirm = function (m) { log("confirm: " + m + " -> no", "warn"); return false; };
+    return loadJs("src/firmware.js")
+      .then(function () {
+        var fwv = window.fw_str || "";
+        if (!fwv) throw new Error("firmware version not set");
+        log("loading offsets for " + fwv, "info");
+        return loadJs("offsets/" + fwv + ".js");
+      })
+      .then(function () {
+        return loadSeq(["src/main.js", "src/rop.js", "src/utils/syscalls.js"]);
+      })
+      .then(function () {
+        return loadJs("src/site.js", true);
+      })
+      .then(function () {
+        log("Relapse loaded — exploit started", "success");
+      })
+      .catch(function (e) { log("Relapse failed: " + e.message, "err"); });
+  }
+
+  /* ===== poops/p2jb via hidden iframe (kept for compatibility) ===== */
   function runExt(url, name) {
     log("loading " + name + " chain...", "warn");
     var frame = document.getElementById("extframe");
@@ -451,43 +207,26 @@
       var d = e.data;
       if (d.bridgeType === "log" || d.bridgeType === "stage" || d.bridgeType === "early") {
         var txt = d.text || d.msg || d.item || "";
-        var isErr = d.progress === -1 || txt.toLowerCase().indexOf("error") >= 0;
-        var isSuccess = txt.toLowerCase().indexOf("success") >= 0 || txt.toLowerCase().indexOf("done") >= 0;
-        log("[" + (d.chain||"ext") + "] " + txt, isErr ? "err" : (isSuccess ? "success" : "warn"));
-        if (txt.toLowerCase().indexOf("elfldr") >= 0 || txt.toLowerCase().indexOf("finished") >= 0) {
-          if (!elfldrReady) {
-            elfldrReady = true;
-            log("elfldr detected!", "success");
-            enablePayloadButtons();
-          }
-        }
-      } else if (d.bridgeType === "error") {
-        log("[" + (d.chain||"ext") + "] ERROR: " + (d.msg||""), "err");
-      } else if (d.bridgeType === "elfldr-up") {
-        if (!elfldrReady) {
-          elfldrReady = true;
-          log("elfldr detected!", "success");
-          enablePayloadButtons();
-        }
+        var isErr = d.progress === -1 || (txt && txt.toLowerCase().indexOf("error") >= 0);
+        var isSuccess = txt && (txt.toLowerCase().indexOf("success") >= 0 || txt.toLowerCase().indexOf("done") >= 0 || txt.toLowerCase().indexOf("ready") >= 0);
+        log(txt || d.bridgeType, isErr ? "err" : isSuccess ? "success" : "info");
       }
     });
   }
 
-  /* ===== firmware routing ===== */
-  log("unified webkit exploit ready", "success");
+  /* ===== FIRMWARE DETECTION ===== */
   var ua = navigator.userAgent;
-  var m = ua.match(/PlayStation 5\/(\d+\.\d+)/);
-  var fw = m ? m[1] : null;
-  var q = new URLSearchParams(location.search);
-  var forced = q.get("chain");
+  var m = /PlayStation 5\/(\d+\.\d+)/.exec(ua);
+  var fw = m ? m[1] : "";
+  var forced = false;
+  try { forced = sessionStorage.getItem("force_chain") || location.hash.indexOf("force") >= 0; } catch(e) {}
 
   var chain = null, name = null, extUrl = null;
-  if (forced === "ux") { chain = "ux"; name = "umtx2 (forced)"; }
-  else if (forced === "poops") { chain = "poops"; name = "poops (forced)"; extUrl = "ext/poops.html?go=1&auto=1&trigger=netcontrol&payload=1&v=128&nullfds=1"; }
-  else if (forced === "p2jb") { chain = "p2jb"; name = "p2jb (forced)"; extUrl = "ext/p2jb.html?go=1&auto=1&trigger=netcontrol&payload=1&v=128"; }
-  else if (fw && has(UX, fw)) { chain = "ux"; name = "umtx2"; }
-  else if (fw && has(POOPS, fw) && !has(P2JB, fw)) { chain = "poops"; name = "poopsploit"; extUrl = "ext/poops.html?go=1&auto=1&trigger=netcontrol&payload=1&v=128&nullfds=1"; }
-  else if (fw && has(P2JB, fw)) { chain = "p2jb"; name = "p2JB"; extUrl = "ext/p2jb.html?go=1&auto=1&trigger=netcontrol&payload=1&v=128"; }
+  if (forced) {
+    if (location.hash.indexOf("relapse") >= 0) { chain = "relapse"; name = "Relapse (forced)"; }
+    else if (location.hash.indexOf("ux") >= 0) { chain = "ux"; name = "umtx2 (forced)"; }
+  } else if (fw && has(UX, fw)) { chain = "ux"; name = "umtx2"; }
+  else if (fw && has(RELAPSE, fw)) { chain = "relapse"; name = "Relapse"; }
 
   var fwline = document.getElementById("ufwline");
   var resume = null;
@@ -513,35 +252,13 @@
         jbBtn.textContent = "RUNNING...";
         log("starting " + name + "...", "success");
         if (chain === "ux") runUx();
+        else if (chain === "relapse") runRelapse();
         else if (chain === "poops" || chain === "p2jb") runExt(extUrl, name);
       };
     }
   }
 
-  discoverPayloads().then(function(){
-    buildPayloadList();
-    checkElfldrRunning().then(function(running){
-      if (running) {
-        elfldrReady = true;
-        log("elfldr already running — payloads unlocked", "success");
-        enablePayloadButtons();
-        jbBtn.className = "elfldr-ready";
-        jbBtn.textContent = "ELFLDR READY";
-        jbBtn.disabled = true;
-      } else {
-        log("elfldr not running — click JAILBREAK", "warn");
-      }
-    });
-  });
-
-  refreshBtn.onclick = function(){
-    refreshBtn.textContent = "...";
-    discoverPayloads().then(function(){
-      buildPayloadList();
-      if (elfldrReady) enablePayloadButtons();
-      refreshBtn.textContent = "REFRESH";
-    });
-  };
+  log("payload panel removed — Relapse integrated for 7.00–13.60 (in-session)", "info");
 
   if (resume && !armed) {
     log("resuming after reload...", "warn");

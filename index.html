@@ -6,38 +6,151 @@
 <title>Unified WebKit Exploit + Relapse</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { width: 100%; height: 100%; background: #000; color: #e8e8e8; font: 18px/1.4 "Segoe UI", system-ui, sans-serif; overflow: hidden; }
-  #uwrap { display: flex; flex-direction: column; width: 100%; height: 100%; padding: 14px; gap: 12px; }
-  #umain, #upayloads-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; min-height: 0; gap: 14px; }
-  #upayloads-screen { display: none; width: 100%; gap: 20px; }
+  html, body {
+    width: 100%; height: 100%;
+    background: #000; color: #e8e8e8;
+    font: 18px/1.4 "Segoe UI", system-ui, sans-serif;
+    overflow: hidden;
+  }
+  #uwrap {
+    display: flex; flex-direction: column;
+    width: 100%; height: 100%;
+    padding: 14px; gap: 12px;
+  }
+
+  #umain, #upayloads-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    min-height: 0;
+    gap: 14px;
+  }
+
+  #upayloads-screen {
+    display: none;
+    width: 100%;
+    gap: 20px;
+  }
+
   #upayloads-screen.active { display: flex; }
   #umain.hidden { display: none; }
-  .payload-grid { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; width: 100%; max-width: 720px; }
-  .payload-rect { flex: 1 1 280px; min-height: 140px; background: #141a22; border: 2px solid #2d4a5a; border-radius: 12px; color: #e8e8e8; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 20px; text-align: center; }
-  .payload-rect:hover:not(:disabled) { background: #1b2530; border-color: #6c8cff; }
-  .payload-rect:disabled { opacity: 0.65; cursor: wait; }
-  .payload-title { font-size: 22px; font-weight: 800; color: #9fc7ff; }
-  .payload-sub { font-size: 13px; color: #9fb1c3; }
-  .payload-ver { font-size: 12px; color: #6c8cff; font-family: "Consolas", monospace; margin-top: 2px; }
-  #uback-main { padding: 10px 24px; border-radius: 8px; background: #181818; border: 1px solid #333; color: #ccc; font-size: 14px; cursor: pointer; }
+
+  .payload-grid {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+    max-width: 720px;
+  }
+
+  .payload-rect {
+    flex: 1 1 280px;
+    min-height: 150px;
+    background: #141a22;
+    border: 2px solid #2d4a5a;
+    border-radius: 12px;
+    color: #e8e8e8;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 20px;
+    text-align: center;
+  }
+
+  .payload-rect:hover:not(:disabled) {
+    background: #1b2530;
+    border-color: #6c8cff;
+  }
+
+  .payload-rect:disabled {
+    opacity: 0.65;
+    cursor: wait;
+  }
+
+  .payload-title {
+    font-size: 22px;
+    font-weight: 800;
+    color: #9fc7ff;
+  }
+
+  .payload-sub {
+    font-size: 13px;
+    color: #9fb1c3;
+  }
+
+  .payload-ver {
+    font-size: 12px;
+    color: #6c8cff;
+    font-family: "Consolas", "DejaVu Sans Mono", monospace;
+    margin-top: 4px;
+  }
+
+  #uback-main {
+    padding: 10px 24px;
+    border-radius: 8px;
+    background: #181818;
+    border: 1px solid #333;
+    color: #ccc;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
   #uback-main:hover { background: #222; }
-  #uleft { display: flex; flex-direction: column; align-items: center; gap: 16px; width: 100%; max-width: 420px; }
-  #ulogo { width: 260px; height: auto; border-radius: 12px; border: 1px solid #333; }
+
+  #uleft {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 16px;
+    width: 100%;
+    max-width: 420px;
+  }
+
+  #ulogo {
+    width: 260px; height: auto;
+    border-radius: 12px;
+    border: 1px solid #333;
+  }
+
   #ubyline { font-size: 15px; color: #8fa0b3; text-align: center; }
   #ufwline { font-size: 16px; color: #9fb1c3; text-align: center; }
   #ufwline b { color: #fff; }
-  #ujb { padding: 16px 64px; border-radius: 12px; background: #1a3a1a; border: 2px solid #2d5a2d; color: #7fd88a; font-weight: 800; font-size: 22px; letter-spacing: 2px; cursor: pointer; text-decoration: none; min-width: 280px; text-align: center; }
+
+  #ujb {
+    padding: 16px 64px;
+    border-radius: 12px; background: #1a3a1a; border: 2px solid #2d5a2d;
+    color: #7fd88a; font-weight: 800; font-size: 22px; letter-spacing: 2px;
+    cursor: pointer; text-decoration: none;
+    min-width: 280px; text-align: center;
+  }
   #ujb:hover { background: #224422; }
   #ujb.disabled { background: #1a1a1a; border-color: #333; color: #555; cursor: not-allowed; }
   #ujb.running { opacity: 0.6; cursor: wait; }
   #ujb.elfldr-ready { background: #1a2a3a; border-color: #2d4a5a; color: #9fc7ff; cursor: pointer; }
-  #ulog { flex-shrink: 0; height: 160px; background: #0a0a0a; border: 1px solid #222; border-radius: 10px; padding: 8px 10px; font: 13px/1.4 "Consolas", "DejaVu Sans Mono", monospace; color: #b9e6b0; white-space: pre-wrap; overflow-y: auto; }
+
+  #ulog {
+    flex-shrink: 0;
+    height: 160px;
+    background: #0a0a0a; border: 1px solid #222; border-radius: 10px;
+    padding: 8px 10px;
+    font: 13px/1.4 "Consolas", "DejaVu Sans Mono", monospace;
+    color: #b9e6b0; white-space: pre-wrap; overflow-y: auto;
+  }
   #ulog .err { color: #ff9a8a; }
   #ulog .success { color: #7fd88a; }
   #ulog .warn { color: #ffd479; }
   #ulog .info { color: #9fc7ff; }
+
   #uchain { display: none !important; }
-  #extframe { position: fixed; top: 0; left: 0; width: 100%; height: 100%; border: 0; z-index: 1; opacity: 0; pointer-events: none; }
+
+  #extframe {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; border: 0;
+    z-index: 1; opacity: 0; pointer-events: none;
+  }
 </style>
 </head>
 <body>
@@ -60,13 +173,13 @@
               onclick="handlePayloadSelect('EchoStretch/kstuff-lite', 'rect-kstuff', 'KStuff Lite')">
         <span class="payload-title">KStuff Lite</span>
         <span class="payload-sub">Inietta ultima release</span>
-        <span class="payload-ver" id="ver-kstuff">v—</span>
+        <span class="payload-ver" id="ver-kstuff">v— caricamento...</span>
       </button>
       <button id="rect-shadowmount" class="payload-rect" type="button"
               onclick="handlePayloadSelect('drakmor/ShadowMountPlus', 'rect-shadowmount', 'Shadow Mount')">
         <span class="payload-title">Shadow Mount</span>
         <span class="payload-sub">Inietta ultima release</span>
-        <span class="payload-ver" id="ver-shadowmount">v—</span>
+        <span class="payload-ver" id="ver-shadowmount">v— caricamento...</span>
       </button>
     </div>
     <button id="uback-main" type="button" onclick="showScreen('main')">Torna alla schermata principale</button>
@@ -81,6 +194,11 @@
   var UX = ["1.00","1.01","1.02","1.05","1.10","1.11","1.12","1.13","1.14","2.00","2.20","2.25","2.26","2.30","2.50","2.70","3.00","3.10","3.20","3.21","4.00","4.02","4.03","4.50","4.51","5.00","5.02","5.10","5.50"];
   var RELAPSE = ["7.00","7.01","7.20","7.40","7.60","7.61","8.00","8.20","8.40","8.60","9.00","9.20","9.40","9.60","10.00","10.01","10.20","10.40","10.60","11.00","11.20","11.60","12.00","12.02","12.20","12.40","12.60","12.70","13.00","13.20","13.40","13.42","13.60"];
 
+  var PAYLOAD_DEFS = [
+    { repo: 'EchoStretch/kstuff-lite', verId: 'ver-kstuff',      title: 'KStuff Lite',  hint: 'kstuff' },
+    { repo: 'drakmor/ShadowMountPlus', verId: 'ver-shadowmount', title: 'Shadow Mount', hint: 'shadowmount' }
+  ];
+
   var logEl = document.getElementById("ulog");
   var jbBtn = document.getElementById("ujb");
   var mainScreen = document.getElementById("umain");
@@ -88,10 +206,9 @@
   var elfldrReady = false;
   var armed = false;
   var versionsLoaded = false;
-
-  // Cache delle release: repo -> { tag, downloadUrl, name, error }
   var payloadCache = {};
 
+  // ── Logging ────────────────────────────────────────────────────────
   function log(msg, cls) {
     var d = new Date();
     var t = ("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2)+":"+("0"+d.getSeconds()).slice(-2);
@@ -103,17 +220,20 @@
   }
   window.mainLog = log;
 
+  // ── Screen switching (idempotente) ─────────────────────────────────
   function showScreen(target) {
     if (target === "payloads") {
+      if (showScreen._entered) return;
+      showScreen._entered = true;
       mainScreen.classList.add("hidden");
       payloadsScreen.classList.add("active");
       window.dispatchEvent(new CustomEvent("u-screen-change", { detail: { screen: "payloads" } }));
-      // Carica le versioni solo una volta
       if (!versionsLoaded) {
         versionsLoaded = true;
         loadPayloadVersions();
       }
     } else {
+      showScreen._entered = false;
       payloadsScreen.classList.remove("active");
       mainScreen.classList.remove("hidden");
       window.dispatchEvent(new CustomEvent("u-screen-change", { detail: { screen: "main" } }));
@@ -121,8 +241,12 @@
   }
   window.showScreen = showScreen;
 
+  // ── Callback: elfldr pronto (idempotente) ──────────────────────────
   window.onFlooderDetected = function (info) {
-    if (elfldrReady) return; // già sbloccato
+    if (elfldrReady) {
+      if (!showScreen._entered) showScreen("payloads");
+      return;
+    }
     elfldrReady = true;
     var label = (info && info.source) ? info.source : "flooder";
     log("flooder / target ready (" + label + ") — opening payload screen", "success");
@@ -133,18 +257,19 @@
     showScreen("payloads");
   };
 
-  // ── Rilevamento attivo di elfldr su 127.0.0.1:9021 ──────────────────
+  // ── Rilevamento attivo di elfldr su 127.0.0.1:9021 ─────────────────
   function waitForElfldr(timeoutMs) {
-    timeoutMs = timeoutMs || 30000;
+    timeoutMs = timeoutMs || 90000;
     var start = Date.now();
     log("in attesa di elfldr su 127.0.0.1:9021...", "info");
-    return new Promise(function (resolve, reject) {
+    return new Promise(function (resolve) {
       function probe() {
+        if (elfldrReady) { resolve(true); return; }
         if (Date.now() - start > timeoutMs) {
-          return reject(new Error("timeout in attesa di elfldr su 127.0.0.1:9021"));
+          log("timeout in attesa di elfldr su 127.0.0.1:9021", "err");
+          resolve(false);
+          return;
         }
-        // mode:'no-cors' — risolve con risposta opaca se porta aperta,
-        // rigetta se connessione rifiutata (porta chiusa).
         fetch("http://127.0.0.1:9021/", { method: "GET", mode: "no-cors", cache: "no-store" })
           .then(function () {
             log("elfldr rilevato su 127.0.0.1:9021", "success");
@@ -159,115 +284,158 @@
     });
   }
 
-  // ── Recupero release da GitHub (con cache) ─────────────────────────
-  async function fetchLatestRelease(repo, assetHint) {
-    if (payloadCache[repo] && !payloadCache[repo].error) return payloadCache[repo];
-    const apiUrl = `https://api.github.com/repos/${repo}/releases/latest`;
-    const resp = await fetch(apiUrl, { headers: { 'Accept': 'application/vnd.github.v3+json' } });
-    if (!resp.ok) {
-      const err = new Error(`release non disponibile (${resp.status})`);
-      payloadCache[repo] = { error: err.message };
-      throw err;
-    }
-    const data = await resp.json();
-    const assets = data.assets || [];
-    const asset = assets.find(a =>
-      a.name.toLowerCase().endsWith('.elf') &&
-      (assetHint ? a.name.toLowerCase().includes(assetHint.toLowerCase()) : true)
-    );
-    if (!asset) {
-      const err = new Error(`nessun asset .elf nella release ${data.tag_name}`);
-      payloadCache[repo] = { error: err.message };
-      throw err;
-    }
-    const result = { tag: data.tag_name, downloadUrl: asset.browser_download_url, name: asset.name };
-    payloadCache[repo] = result;
-    return result;
+  // ── Boot-check: se elfldr è già attivo al load, salta ai payloads ──
+  function bootCheckElfldr() {
+    if (elfldrReady) return;
+    fetch("http://127.0.0.1:9021/", { method: "GET", mode: "no-cors", cache: "no-store" })
+      .then(function () {
+        log("elfldr già attivo al boot — salto ai payloads", "success");
+        window.onFlooderDetected({ source: "boot-check" });
+      })
+      .catch(function () {
+        /* porta chiusa: si aspetta il click JAILBREAK */
+      });
   }
 
-  var PAYLOAD_DEFS = [
-    { repo: 'EchoStretch/kstuff-lite',    verId: 'ver-kstuff',      title: 'KStuff Lite',  hint: 'kstuff' },
-    { repo: 'drakmor/ShadowMountPlus',    verId: 'ver-shadowmount', title: 'Shadow Mount', hint: 'shadowmount' }
-  ];
-
-  async function loadPayloadVersions() {
-    for (const def of PAYLOAD_DEFS) {
-      const verEl = document.getElementById(def.verId);
-      if (verEl) verEl.textContent = 'v— caricamento...';
-      try {
-        const rel = await fetchLatestRelease(def.repo, def.hint);
-        if (verEl) verEl.textContent = rel.tag;
-        log(`${def.title}: ${rel.tag} (${rel.name})`, 'info');
-      } catch (e) {
-        if (verEl) verEl.textContent = 'v— non disponibile';
-        log(`Versione ${def.title} non recuperabile: ${e.message}`, 'warn');
-      }
+  // ── GitHub release fetch (con cache) ──────────────────────────────
+  function fetchLatestRelease(repo, assetHint) {
+    if (payloadCache[repo] && !payloadCache[repo].error) {
+      return Promise.resolve(payloadCache[repo]);
     }
+    var apiUrl = "https://api.github.com/repos/" + repo + "/releases/latest";
+    return fetch(apiUrl, { headers: { 'Accept': 'application/vnd.github.v3+json' } })
+      .then(function (resp) {
+        if (!resp.ok) {
+          var err = new Error("release non disponibile (" + resp.status + ")");
+          payloadCache[repo] = { error: err.message };
+          throw err;
+        }
+        return resp.json();
+      })
+      .then(function (data) {
+        var assets = data.assets || [];
+        var asset = null;
+        for (var i = 0; i < assets.length; i++) {
+          var a = assets[i];
+          var nameLc = (a.name || "").toLowerCase();
+          if (nameLc.slice(-4) === ".elf" &&
+              (!assetHint || nameLc.indexOf(assetHint.toLowerCase()) !== -1)) {
+            asset = a;
+            break;
+          }
+        }
+        if (!asset) {
+          var err = new Error("nessun asset .elf nella release " + data.tag_name);
+          payloadCache[repo] = { error: err.message };
+          throw err;
+        }
+        var result = {
+          tag: data.tag_name,
+          downloadUrl: asset.browser_download_url,
+          name: asset.name
+        };
+        payloadCache[repo] = result;
+        return result;
+      });
+  }
+
+  // ── Carica le versioni da mostrare sotto ai bottoni ────────────────
+  function loadPayloadVersions() {
+    var i = 0;
+    function next() {
+      if (i >= PAYLOAD_DEFS.length) return;
+      var def = PAYLOAD_DEFS[i++];
+      var verEl = document.getElementById(def.verId);
+      if (verEl) verEl.textContent = "v— caricamento...";
+      fetchLatestRelease(def.repo, def.hint)
+        .then(function (rel) {
+          if (verEl) verEl.textContent = rel.tag;
+          log(def.title + ": " + rel.tag + " (" + rel.name + ")", "info");
+          next();
+        })
+        .catch(function (e) {
+          if (verEl) verEl.textContent = "v— non disponibile";
+          log("Versione " + def.title + " non recuperabile: " + e.message, "warn");
+          next();
+        });
+    }
+    next();
   }
 
   // ── Iniezione ELF su 127.0.0.1:9021 ────────────────────────────────
-  async function injectElfToLoader(elfUrl, title) {
-    log(`Download di ${title}...`, "info");
-    const resp = await fetch(elfUrl);
-    if (!resp.ok) throw new Error(`download fallito: ${resp.status} ${resp.statusText}`);
-    const arrayBuffer = await resp.arrayBuffer();
-    log(`Download completato (${(arrayBuffer.byteLength / 1024).toFixed(1)} KB). Invio a elfldr...`, "info");
+  function injectElfToLoader(elfUrl, title) {
+    log("Download di " + title + "...", "info");
+    return fetch(elfUrl)
+      .then(function (resp) {
+        if (!resp.ok) throw new Error("download fallito: " + resp.status + " " + resp.statusText);
+        return resp.arrayBuffer();
+      })
+      .then(function (arrayBuffer) {
+        log("Download completato (" + (arrayBuffer.byteLength / 1024).toFixed(1) +
+            " KB). Invio a elfldr...", "info");
+        var loaderUrl = "http://127.0.0.1:9021/";
+        var blob = new Blob([arrayBuffer], { type: "application/octet-stream" });
 
-    const loaderUrl = 'http://127.0.0.1:9021/';
-    const blob = new Blob([arrayBuffer], { type: 'application/octet-stream' });
-
-    try {
-      await fetch(loaderUrl, {
-        method: 'POST',
-        mode: 'no-cors',
-        body: blob
+        return fetch(loaderUrl, {
+          method: "POST",
+          mode: "no-cors",
+          body: blob
+        })
+        .then(function () {
+          log(title + " inviato con successo a elfldr.", "success");
+          return true;
+        })
+        .catch(function (e) {
+          log("Invio fetch fallito (" + e.message + "). Tento con XHR...", "warn");
+          return new Promise(function (resolve, reject) {
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", loaderUrl, true);
+            xhr.onload = function () {
+              if (xhr.status >= 200 && xhr.status < 300) {
+                log(title + " inviato con successo (XHR).", "success");
+                resolve(true);
+              } else {
+                reject(new Error("XHR status: " + xhr.status));
+              }
+            };
+            xhr.onerror = function () { reject(new Error("errore di rete XHR")); };
+            xhr.send(arrayBuffer);
+          });
+        });
       });
-      log(`${title} inviato con successo a elfldr.`, "success");
-      return true;
-    } catch (e) {
-      log(`Invio fetch fallito (${e.message}). Tento con XHR...`, "warn");
-      return new Promise((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        xhr.open('POST', loaderUrl, true);
-        xhr.onload = () => {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            log(`${title} inviato con successo (XHR).`, "success");
-            resolve(true);
-          } else {
-            reject(new Error(`XHR status: ${xhr.status}`));
-          }
-        };
-        xhr.onerror = () => reject(new Error('errore di rete XHR'));
-        xhr.send(arrayBuffer);
-      });
-    }
   }
 
-  window.handlePayloadSelect = async function (repo, btnId, title) {
-    const btn = document.getElementById(btnId);
-    const sub = btn ? btn.querySelector(".payload-sub") : null;
+  // ── Handler click su un payload ────────────────────────────────────
+  window.handlePayloadSelect = function (repo, btnId, title) {
+    var btn = document.getElementById(btnId);
+    var sub = btn ? btn.querySelector(".payload-sub") : null;
     if (btn) btn.disabled = true;
     if (sub) sub.textContent = "download in corso...";
-    log(`Selezionato ${title} (${repo})`, "info");
+    log("Selezionato " + title + " (" + repo + ")", "info");
 
-    let hint = '';
-    if (repo.includes('kstuff')) hint = 'kstuff';
-    else if (repo.includes('ShadowMount')) hint = 'shadowmount';
+    var hint = "";
+    if (repo.indexOf("kstuff") !== -1) hint = "kstuff";
+    else if (repo.indexOf("ShadowMount") !== -1) hint = "shadowmount";
 
-    try {
-      const rel = await fetchLatestRelease(repo, hint);
-      if (sub) sub.textContent = `iniezione ${rel.tag}...`;
-      await injectElfToLoader(rel.downloadUrl, title);
-      if (sub) sub.textContent = `iniettato ✓`;
-    } catch (e) {
-      log(`Errore per ${title}: ${e.message}`, "err");
-      if (sub) sub.textContent = "errore: " + e.message;
-    } finally {
-      if (btn) btn.disabled = false;
-    }
+    return fetchLatestRelease(repo, hint)
+      .then(function (rel) {
+        if (sub) sub.textContent = "iniezione " + rel.tag + "...";
+        return injectElfToLoader(rel.downloadUrl, title);
+      })
+      .then(function () {
+        if (sub) sub.textContent = "iniettato ✓";
+        window.dispatchEvent(new CustomEvent("u-payload-injected", { detail: { repo: repo, title: title } }));
+      })
+      .catch(function (e) {
+        log("Errore per " + title + ": " + e.message, "err");
+        if (sub) sub.textContent = "errore: " + e.message;
+      })
+      .then(function () {
+        if (btn) btn.disabled = false;
+      });
   };
 
-  // ── chain loaders ─────────────────────────────────────────────────
+  // ── Chain loader helpers ──────────────────────────────────────────
   function setBase(href) {
     var existing = document.querySelector("base");
     if (existing) existing.remove();
@@ -275,6 +443,7 @@
     b.href = href;
     document.head.appendChild(b);
   }
+
   function loadJs(src, isModule) {
     return new Promise(function (res, rej) {
       var s = document.createElement("script");
@@ -285,13 +454,19 @@
       document.body.appendChild(s);
     });
   }
+
   function loadSeq(list) {
     var p = Promise.resolve();
     list.forEach(function (src) { p = p.then(function () { return loadJs(src, false); }); });
     return p;
   }
-  function has(list, fw) { for (var i=0;i<list.length;i++) if (list[i]===fw) return true; return false; }
 
+  function has(list, fw) {
+    for (var i = 0; i < list.length; i++) if (list[i] === fw) return true;
+    return false;
+  }
+
+  // ── Catena UX (umtx2) ──────────────────────────────────────────────
   function runUx() {
     log("loading umtx2 chain...", "warn");
     setBase("ux/");
@@ -304,20 +479,26 @@
       '<div id="payloads-view" style="display:none"></div></div>';
     window.alert = function (m) { log("alert: " + m, "warn"); };
     window.confirm = function (m) { log("confirm: " + m + " -> no", "warn"); return false; };
+
+    // 🔑 FIX A: watcher parte PRIMA di run() e vive indipendentemente
+    waitForElfldr(90000);
+
     return loadSeq(["int64.js", "rop.js", "main.js", "umtx2.js", "custom_host_stuff.js", "syscalls.js"])
       .then(function () { return loadJs("psfree/psfree.js", true); })
       .then(function () { return loadJs("payload_map.js", false); })
       .then(function () {
         log("umtx2 loaded — starting exploit", "success");
-        return run(false, false);
-      })
-      .then(function () {
-        log("exploit terminato, attendo elfldr...", "info");
-        return waitForElfldr(30000);
+        try {
+          run(false, false);
+        } catch (e) {
+          log("run() ha lanciato: " + e.message, "warn");
+        }
+        return Promise.resolve();
       })
       .catch(function (e) { log("umtx2 failed: " + e.message, "err"); });
   }
 
+  // ── Catena Relapse ────────────────────────────────────────────────
   function runRelapse() {
     log("loading Relapse chain (in-session)...", "warn");
     if (!document.getElementById("console")) {
@@ -329,6 +510,10 @@
     setBase("relapse/");
     window.alert = function (m) { log("alert: " + m, "warn"); };
     window.confirm = function (m) { log("confirm: " + m + " -> no", "warn"); return false; };
+
+    // 🔑 FIX A: watcher in parallelo
+    waitForElfldr(90000);
+
     return loadJs("src/firmware.js")
       .then(function () {
         var fwv = window.fw_str || "";
@@ -336,30 +521,26 @@
         log("loading offsets for " + fwv, "info");
         return loadJs("offsets/" + fwv + ".js");
       })
-      .then(function () {
-        return loadSeq(["src/main.js", "src/rop.js", "src/utils/syscalls.js"]);
-      })
-      .then(function () {
-        return loadJs("src/site.js", true);
-      })
-      .then(function () {
-        log("Relapse loaded — exploit started", "success");
-        return waitForElfldr(30000);
-      })
+      .then(function () { return loadSeq(["src/main.js", "src/rop.js", "src/utils/syscalls.js"]); })
+      .then(function () { return loadJs("src/site.js", true); })
+      .then(function () { log("Relapse loaded — exploit started", "success"); })
       .catch(function (e) { log("Relapse failed: " + e.message, "err"); });
   }
 
+  // ── Catena esterna (iframe bridge) ────────────────────────────────
   function runExt(url, name) {
     log("loading " + name + " chain...", "warn");
     var frame = document.getElementById("extframe");
     frame.src = url;
-    window.addEventListener("message", function onMsg(e){
+    window.addEventListener("message", function onMsg(e) {
       if (!e.data || !e.data.bridgeType) return;
       var d = e.data;
       if (d.bridgeType === "log" || d.bridgeType === "stage" || d.bridgeType === "early") {
         var txt = d.text || d.msg || d.item || "";
         var isErr = d.progress === -1 || (txt && txt.toLowerCase().indexOf("error") >= 0);
-        var isSuccess = txt && (txt.toLowerCase().indexOf("success") >= 0 || txt.toLowerCase().indexOf("done") >= 0 || txt.toLowerCase().indexOf("ready") >= 0);
+        var isSuccess = txt && (txt.toLowerCase().indexOf("success") >= 0 ||
+                                txt.toLowerCase().indexOf("done") >= 0 ||
+                                txt.toLowerCase().indexOf("ready") >= 0);
         log(txt || d.bridgeType, isErr ? "err" : isSuccess ? "success" : "info");
         if (isSuccess && !elfldrReady && window.onFlooderDetected) {
           window.onFlooderDetected({ source: name });
@@ -368,11 +549,12 @@
     });
   }
 
+  // ── Rilevamento firmware PS5 ──────────────────────────────────────
   var ua = navigator.userAgent;
   var m = /PlayStation 5\/(\d+\.\d+)/.exec(ua);
   var fw = m ? m[1] : "";
   var forced = false;
-  try { forced = sessionStorage.getItem("force_chain") || location.hash.indexOf("force") >= 0; } catch(e) {}
+  try { forced = sessionStorage.getItem("force_chain") || location.hash.indexOf("force") >= 0; } catch (e) {}
 
   var chain = null, name = null, extUrl = null;
   if (forced) {
@@ -398,7 +580,7 @@
     } else {
       log("chain: " + name + " — ready", "success");
       jbBtn.className = "";
-      jbBtn.onclick = function(){
+      jbBtn.onclick = function () {
         if (armed && !elfldrReady) { log("jailbreak already running!", "err"); return; }
         if (elfldrReady) { showScreen("payloads"); return; }
         armed = true;
@@ -419,7 +601,13 @@
     jbBtn.textContent = "RUNNING...";
     runUx();
   }
+
+  // 🔑 FIX B: boot-check ad ogni caricamento pagina.
+  // Se l'exploit ha ricaricato la pagina e elfldr è già su, si va
+  // dritti alla schermata payloads senza dover cliccare nulla.
+  setTimeout(bootCheckElfldr, 250);
 })();
 </script>
 </body>
 </html>
+```

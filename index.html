@@ -257,44 +257,57 @@
     showScreen("payloads");
   };
 
-  // ── Rilevamento attivo di elfldr su 127.0.0.1:9021 ─────────────────
+  // ── Rilevamento attivo di elfldr su 127.0.0.1:9021 (via XHR) ───────
   function waitForElfldr(timeoutMs) {
     timeoutMs = timeoutMs || 90000;
     var start = Date.now();
     log("in attesa di elfldr su 127.0.0.1:9021...", "info");
+    
     return new Promise(function (resolve) {
-      function probe() {
-        if (elfldrReady) { resolve(true); return; }
+      var interval = setInterval(function () {
+        if (elfldrReady) {
+          clearInterval(interval);
+          resolve(true);
+          return;
+        }
         if (Date.now() - start > timeoutMs) {
+          clearInterval(interval);
           log("timeout in attesa di elfldr su 127.0.0.1:9021", "err");
           resolve(false);
           return;
         }
-        fetch("http://127.0.0.1:9021/", { method: "GET", mode: "no-cors", cache: "no-store" })
-          .then(function () {
-            log("elfldr rilevato su 127.0.0.1:9021", "success");
-            window.onFlooderDetected({ source: "port-probe" });
-            resolve(true);
-          })
-          .catch(function () {
-            setTimeout(probe, 500);
-          });
-      }
-      probe();
+
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", "http://127.0.0.1:9021/", true);
+        xhr.timeout = 2000;
+        xhr.onload = function () {
+          if (elfldrReady) return;
+          log("elfldr rilevato su 127.0.0.1:9021 (XHR)", "success");
+          window.onFlooderDetected({ source: "xhr-probe" });
+        };
+        xhr.onerror = function () { /* riprova al prossimo tick */ };
+        xhr.ontimeout = function () { /* riprova al prossimo tick */ };
+        
+        try {
+          xhr.send();
+        } catch (e) {
+          // Ignora blocchi di mixed-content e riprova
+        }
+      }, 1000);
     });
   }
 
   // ── Boot-check: se elfldr è già attivo al load, salta ai payloads ──
   function bootCheckElfldr() {
     if (elfldrReady) return;
-    fetch("http://127.0.0.1:9021/", { method: "GET", mode: "no-cors", cache: "no-store" })
-      .then(function () {
-        log("elfldr già attivo al boot — salto ai payloads", "success");
-        window.onFlooderDetected({ source: "boot-check" });
-      })
-      .catch(function () {
-        /* porta chiusa: si aspetta il click JAILBREAK */
-      });
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", "http://127.0.0.1:9021/", true);
+    xhr.timeout = 2000;
+    xhr.onload = function () {
+      log("elfldr già attivo al boot — salto ai payloads", "success");
+      window.onFlooderDetected({ source: "boot-check" });
+    };
+    try { xhr.send(); } catch(e) {}
   }
 
   // ── GitHub release fetch (con cache) ──────────────────────────────
@@ -362,7 +375,7 @@
     next();
   }
 
-  // ── Iniezione ELF su 127.0.0.1:9021 ────────────────────────────────
+  // ── Iniezione ELF su 127.0.0.1:9021 (via XHR per bypassare mixed-content) ──
   function injectElfToLoader(elfUrl, title) {
     log("Download di " + title + "...", "info");
     return fetch(elfUrl)
@@ -374,33 +387,27 @@
         log("Download completato (" + (arrayBuffer.byteLength / 1024).toFixed(1) +
             " KB). Invio a elfldr...", "info");
         var loaderUrl = "http://127.0.0.1:9021/";
-        var blob = new Blob([arrayBuffer], { type: "application/octet-stream" });
-
-        return fetch(loaderUrl, {
-          method: "POST",
-          mode: "no-cors",
-          body: blob
-        })
-        .then(function () {
-          log(title + " inviato con successo a elfldr.", "success");
-          return true;
-        })
-        .catch(function (e) {
-          log("Invio fetch fallito (" + e.message + "). Tento con XHR...", "warn");
-          return new Promise(function (resolve, reject) {
-            var xhr = new XMLHttpRequest();
-            xhr.open("POST", loaderUrl, true);
-            xhr.onload = function () {
-              if (xhr.status >= 200 && xhr.status < 300) {
-                log(title + " inviato con successo (XHR).", "success");
-                resolve(true);
-              } else {
-                reject(new Error("XHR status: " + xhr.status));
-              }
-            };
-            xhr.onerror = function () { reject(new Error("errore di rete XHR")); };
+        
+        return new Promise(function (resolve, reject) {
+          var xhr = new XMLHttpRequest();
+          xhr.open("POST", loaderUrl, true);
+          xhr.timeout = 15000;
+          xhr.onload = function () {
+            if (xhr.status >= 200 && xhr.status < 300 || xhr.status === 0) {
+              log(title + " inviato con successo a elfldr.", "success");
+              resolve(true);
+            } else {
+              reject(new Error("XHR status: " + xhr.status));
+            }
+          };
+          xhr.onerror = function () { reject(new Error("errore di rete XHR (porta 9021 chiusa o bloccata?)")); };
+          xhr.ontimeout = function () { reject(new Error("timeout nell'invio a elfldr")); };
+          
+          try {
             xhr.send(arrayBuffer);
-          });
+          } catch (e) {
+            reject(new Error("eccezione invio: " + e.message));
+          }
         });
       });
   }
@@ -478,19 +485,20 @@
       '<div id="console-view"><div id="console" class="log"></div></div>' +
       '<div id="payloads-view" style="display:none"></div></div>';
     
-    // 🔑 Gestione intelligente della conferma per la modalità sender-only
+    // 🔑 Hook del confirm: se umtx2 rileva elfldr, sblocca la schermata!
     window.alert = function (m) { log("alert: " + m, "warn"); };
     window.confirm = function (m) {
       var msg = String(m).toLowerCase();
       if (msg.indexOf("sender-only") !== -1 || msg.indexOf("skip the kernel exploit") !== -1) {
         log("confirm: " + m + " -> yes (sender-only mode)", "success");
+        window.onFlooderDetected({ source: "umtx2-confirm" });
         return true;
       }
       log("confirm: " + m + " -> no", "warn");
       return false;
     };
 
-    // 🔑 Watcher in parallelo
+    // Avvia il watcher in parallelo
     waitForElfldr(90000);
 
     return loadSeq(["int64.js", "rop.js", "main.js", "umtx2.js", "custom_host_stuff.js", "syscalls.js"])
@@ -524,6 +532,7 @@
       var msg = String(m).toLowerCase();
       if (msg.indexOf("sender-only") !== -1 || msg.indexOf("skip the kernel exploit") !== -1) {
         log("confirm: " + m + " -> yes (sender-only mode)", "success");
+        window.onFlooderDetected({ source: "relapse-confirm" });
         return true;
       }
       log("confirm: " + m + " -> no", "warn");
@@ -567,7 +576,7 @@
     });
   }
 
- // ── Rilevamento firmware PS5 ──────────────────────────────────────
+  // ── Rilevamento firmware PS5 ──────────────────────────────────────
   var ua = navigator.userAgent;
   var m = /PlayStation 5\/(\d+\.\d+)/.exec(ua);
   var fw = m ? m[1] : "";

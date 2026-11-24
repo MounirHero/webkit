@@ -6,77 +6,38 @@
 <title>Unified WebKit Exploit + Relapse</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body {
-    width: 100%; height: 100%;
-    background: #000; color: #e8e8e8;
-    font: 18px/1.4 "Segoe UI", system-ui, sans-serif;
-    overflow: hidden;
-  }
-  #uwrap {
-    display: flex; flex-direction: column;
-    width: 100%; height: 100%;
-    padding: 14px; gap: 12px;
-  }
-
-  #umain {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    flex: 1;
-    min-height: 0;
-    gap: 14px;
-  }
-
-  #uleft {
-    display: flex; flex-direction: column;
-    align-items: center; gap: 16px;
-    width: 100%;
-    max-width: 420px;
-  }
-  #ulogo {
-    width: 260px; height: auto;
-    border-radius: 12px;
-    border: 1px solid #333;
-  }
+  html, body { width: 100%; height: 100%; background: #000; color: #e8e8e8; font: 18px/1.4 "Segoe UI", system-ui, sans-serif; overflow: hidden; }
+  #uwrap { display: flex; flex-direction: column; width: 100%; height: 100%; padding: 14px; gap: 12px; }
+  #umain, #upayloads-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; min-height: 0; gap: 14px; }
+  #upayloads-screen { display: none; width: 100%; gap: 20px; }
+  #upayloads-screen.active { display: flex; }
+  #umain.hidden { display: none; }
+  .payload-grid { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; width: 100%; max-width: 720px; }
+  .payload-rect { flex: 1 1 280px; min-height: 140px; background: #141a22; border: 2px solid #2d4a5a; border-radius: 12px; color: #e8e8e8; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 20px; text-align: center; }
+  .payload-rect:hover:not(:disabled) { background: #1b2530; border-color: #6c8cff; }
+  .payload-rect:disabled { opacity: 0.65; cursor: wait; }
+  .payload-title { font-size: 22px; font-weight: 800; color: #9fc7ff; }
+  .payload-sub { font-size: 13px; color: #9fb1c3; }
+  .payload-ver { font-size: 12px; color: #6c8cff; font-family: "Consolas", monospace; margin-top: 2px; }
+  #uback-main { padding: 10px 24px; border-radius: 8px; background: #181818; border: 1px solid #333; color: #ccc; font-size: 14px; cursor: pointer; }
+  #uback-main:hover { background: #222; }
+  #uleft { display: flex; flex-direction: column; align-items: center; gap: 16px; width: 100%; max-width: 420px; }
+  #ulogo { width: 260px; height: auto; border-radius: 12px; border: 1px solid #333; }
   #ubyline { font-size: 15px; color: #8fa0b3; text-align: center; }
   #ufwline { font-size: 16px; color: #9fb1c3; text-align: center; }
   #ufwline b { color: #fff; }
-
-  #ujb {
-    padding: 16px 64px;
-    border-radius: 12px; background: #1a3a1a; border: 2px solid #2d5a2d;
-    color: #7fd88a; font-weight: 800; font-size: 22px; letter-spacing: 2px;
-    cursor: pointer; text-decoration: none;
-    min-width: 280px; text-align: center;
-  }
+  #ujb { padding: 16px 64px; border-radius: 12px; background: #1a3a1a; border: 2px solid #2d5a2d; color: #7fd88a; font-weight: 800; font-size: 22px; letter-spacing: 2px; cursor: pointer; text-decoration: none; min-width: 280px; text-align: center; }
   #ujb:hover { background: #224422; }
   #ujb.disabled { background: #1a1a1a; border-color: #333; color: #555; cursor: not-allowed; }
   #ujb.running { opacity: 0.6; cursor: wait; }
-  #ujb.elfldr-ready { background: #1a2a3a; border-color: #2d4a5a; color: #9fc7ff; cursor: not-allowed; }
-
-  #ulog {
-    flex-shrink: 0;
-    height: 160px;
-    background: #0a0a0a; border: 1px solid #222; border-radius: 10px;
-    padding: 8px 10px;
-    font: 13px/1.4 "Consolas", "DejaVu Sans Mono", monospace;
-    color: #b9e6b0; white-space: pre-wrap; overflow-y: auto;
-  }
+  #ujb.elfldr-ready { background: #1a2a3a; border-color: #2d4a5a; color: #9fc7ff; cursor: pointer; }
+  #ulog { flex-shrink: 0; height: 160px; background: #0a0a0a; border: 1px solid #222; border-radius: 10px; padding: 8px 10px; font: 13px/1.4 "Consolas", "DejaVu Sans Mono", monospace; color: #b9e6b0; white-space: pre-wrap; overflow-y: auto; }
   #ulog .err { color: #ff9a8a; }
   #ulog .success { color: #7fd88a; }
   #ulog .warn { color: #ffd479; }
   #ulog .info { color: #9fc7ff; }
-
-  /* umtx2 / relapse console - hidden, we redirect output to #ulog */
-  #uchain {
-    display: none !important;
-  }
-
-  #extframe {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%; border: 0;
-    z-index: 1; opacity: 0; pointer-events: none;
-  }
+  #uchain { display: none !important; }
+  #extframe { position: fixed; top: 0; left: 0; width: 100%; height: 100%; border: 0; z-index: 1; opacity: 0; pointer-events: none; }
 </style>
 </head>
 <body>
@@ -93,6 +54,24 @@
     </div>
   </div>
 
+  <div id="upayloads-screen" aria-live="polite">
+    <div class="payload-grid">
+      <button id="rect-kstuff" class="payload-rect" type="button"
+              onclick="handlePayloadSelect('EchoStretch/kstuff-lite', 'rect-kstuff', 'KStuff Lite')">
+        <span class="payload-title">KStuff Lite</span>
+        <span class="payload-sub">Inietta ultima release</span>
+        <span class="payload-ver" id="ver-kstuff">v—</span>
+      </button>
+      <button id="rect-shadowmount" class="payload-rect" type="button"
+              onclick="handlePayloadSelect('drakmor/ShadowMountPlus', 'rect-shadowmount', 'Shadow Mount')">
+        <span class="payload-title">Shadow Mount</span>
+        <span class="payload-sub">Inietta ultima release</span>
+        <span class="payload-ver" id="ver-shadowmount">v—</span>
+      </button>
+    </div>
+    <button id="uback-main" type="button" onclick="showScreen('main')">Torna alla schermata principale</button>
+  </div>
+
   <div id="ulog"></div>
   <div id="uchain"></div>
 </div>
@@ -104,8 +83,14 @@
 
   var logEl = document.getElementById("ulog");
   var jbBtn = document.getElementById("ujb");
+  var mainScreen = document.getElementById("umain");
+  var payloadsScreen = document.getElementById("upayloads-screen");
   var elfldrReady = false;
   var armed = false;
+  var versionsLoaded = false;
+
+  // Cache delle release: repo -> { tag, downloadUrl, name, error }
+  var payloadCache = {};
 
   function log(msg, cls) {
     var d = new Date();
@@ -118,6 +103,171 @@
   }
   window.mainLog = log;
 
+  function showScreen(target) {
+    if (target === "payloads") {
+      mainScreen.classList.add("hidden");
+      payloadsScreen.classList.add("active");
+      window.dispatchEvent(new CustomEvent("u-screen-change", { detail: { screen: "payloads" } }));
+      // Carica le versioni solo una volta
+      if (!versionsLoaded) {
+        versionsLoaded = true;
+        loadPayloadVersions();
+      }
+    } else {
+      payloadsScreen.classList.remove("active");
+      mainScreen.classList.remove("hidden");
+      window.dispatchEvent(new CustomEvent("u-screen-change", { detail: { screen: "main" } }));
+    }
+  }
+  window.showScreen = showScreen;
+
+  window.onFlooderDetected = function (info) {
+    if (elfldrReady) return; // già sbloccato
+    elfldrReady = true;
+    var label = (info && info.source) ? info.source : "flooder";
+    log("flooder / target ready (" + label + ") — opening payload screen", "success");
+    jbBtn.className = "elfldr-ready";
+    jbBtn.textContent = "PAYLOADS";
+    jbBtn.disabled = false;
+    jbBtn.onclick = function () { showScreen("payloads"); };
+    showScreen("payloads");
+  };
+
+  // ── Rilevamento attivo di elfldr su 127.0.0.1:9021 ──────────────────
+  function waitForElfldr(timeoutMs) {
+    timeoutMs = timeoutMs || 30000;
+    var start = Date.now();
+    log("in attesa di elfldr su 127.0.0.1:9021...", "info");
+    return new Promise(function (resolve, reject) {
+      function probe() {
+        if (Date.now() - start > timeoutMs) {
+          return reject(new Error("timeout in attesa di elfldr su 127.0.0.1:9021"));
+        }
+        // mode:'no-cors' — risolve con risposta opaca se porta aperta,
+        // rigetta se connessione rifiutata (porta chiusa).
+        fetch("http://127.0.0.1:9021/", { method: "GET", mode: "no-cors", cache: "no-store" })
+          .then(function () {
+            log("elfldr rilevato su 127.0.0.1:9021", "success");
+            window.onFlooderDetected({ source: "port-probe" });
+            resolve(true);
+          })
+          .catch(function () {
+            setTimeout(probe, 500);
+          });
+      }
+      probe();
+    });
+  }
+
+  // ── Recupero release da GitHub (con cache) ─────────────────────────
+  async function fetchLatestRelease(repo, assetHint) {
+    if (payloadCache[repo] && !payloadCache[repo].error) return payloadCache[repo];
+    const apiUrl = `https://api.github.com/repos/${repo}/releases/latest`;
+    const resp = await fetch(apiUrl, { headers: { 'Accept': 'application/vnd.github.v3+json' } });
+    if (!resp.ok) {
+      const err = new Error(`release non disponibile (${resp.status})`);
+      payloadCache[repo] = { error: err.message };
+      throw err;
+    }
+    const data = await resp.json();
+    const assets = data.assets || [];
+    const asset = assets.find(a =>
+      a.name.toLowerCase().endsWith('.elf') &&
+      (assetHint ? a.name.toLowerCase().includes(assetHint.toLowerCase()) : true)
+    );
+    if (!asset) {
+      const err = new Error(`nessun asset .elf nella release ${data.tag_name}`);
+      payloadCache[repo] = { error: err.message };
+      throw err;
+    }
+    const result = { tag: data.tag_name, downloadUrl: asset.browser_download_url, name: asset.name };
+    payloadCache[repo] = result;
+    return result;
+  }
+
+  var PAYLOAD_DEFS = [
+    { repo: 'EchoStretch/kstuff-lite',    verId: 'ver-kstuff',      title: 'KStuff Lite',  hint: 'kstuff' },
+    { repo: 'drakmor/ShadowMountPlus',    verId: 'ver-shadowmount', title: 'Shadow Mount', hint: 'shadowmount' }
+  ];
+
+  async function loadPayloadVersions() {
+    for (const def of PAYLOAD_DEFS) {
+      const verEl = document.getElementById(def.verId);
+      if (verEl) verEl.textContent = 'v— caricamento...';
+      try {
+        const rel = await fetchLatestRelease(def.repo, def.hint);
+        if (verEl) verEl.textContent = rel.tag;
+        log(`${def.title}: ${rel.tag} (${rel.name})`, 'info');
+      } catch (e) {
+        if (verEl) verEl.textContent = 'v— non disponibile';
+        log(`Versione ${def.title} non recuperabile: ${e.message}`, 'warn');
+      }
+    }
+  }
+
+  // ── Iniezione ELF su 127.0.0.1:9021 ────────────────────────────────
+  async function injectElfToLoader(elfUrl, title) {
+    log(`Download di ${title}...`, "info");
+    const resp = await fetch(elfUrl);
+    if (!resp.ok) throw new Error(`download fallito: ${resp.status} ${resp.statusText}`);
+    const arrayBuffer = await resp.arrayBuffer();
+    log(`Download completato (${(arrayBuffer.byteLength / 1024).toFixed(1)} KB). Invio a elfldr...`, "info");
+
+    const loaderUrl = 'http://127.0.0.1:9021/';
+    const blob = new Blob([arrayBuffer], { type: 'application/octet-stream' });
+
+    try {
+      await fetch(loaderUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        body: blob
+      });
+      log(`${title} inviato con successo a elfldr.`, "success");
+      return true;
+    } catch (e) {
+      log(`Invio fetch fallito (${e.message}). Tento con XHR...`, "warn");
+      return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', loaderUrl, true);
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            log(`${title} inviato con successo (XHR).`, "success");
+            resolve(true);
+          } else {
+            reject(new Error(`XHR status: ${xhr.status}`));
+          }
+        };
+        xhr.onerror = () => reject(new Error('errore di rete XHR'));
+        xhr.send(arrayBuffer);
+      });
+    }
+  }
+
+  window.handlePayloadSelect = async function (repo, btnId, title) {
+    const btn = document.getElementById(btnId);
+    const sub = btn ? btn.querySelector(".payload-sub") : null;
+    if (btn) btn.disabled = true;
+    if (sub) sub.textContent = "download in corso...";
+    log(`Selezionato ${title} (${repo})`, "info");
+
+    let hint = '';
+    if (repo.includes('kstuff')) hint = 'kstuff';
+    else if (repo.includes('ShadowMount')) hint = 'shadowmount';
+
+    try {
+      const rel = await fetchLatestRelease(repo, hint);
+      if (sub) sub.textContent = `iniezione ${rel.tag}...`;
+      await injectElfToLoader(rel.downloadUrl, title);
+      if (sub) sub.textContent = `iniettato ✓`;
+    } catch (e) {
+      log(`Errore per ${title}: ${e.message}`, "err");
+      if (sub) sub.textContent = "errore: " + e.message;
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  };
+
+  // ── chain loaders ─────────────────────────────────────────────────
   function setBase(href) {
     var existing = document.querySelector("base");
     if (existing) existing.remove();
@@ -140,10 +290,8 @@
     list.forEach(function (src) { p = p.then(function () { return loadJs(src, false); }); });
     return p;
   }
-
   function has(list, fw) { for (var i=0;i<list.length;i++) if (list[i]===fw) return true; return false; }
 
-  /* ===== umtx2 ===== */
   function runUx() {
     log("loading umtx2 chain...", "warn");
     setBase("ux/");
@@ -161,12 +309,15 @@
       .then(function () { return loadJs("payload_map.js", false); })
       .then(function () {
         log("umtx2 loaded — starting exploit", "success");
-        run(false, false);
+        return run(false, false);
+      })
+      .then(function () {
+        log("exploit terminato, attendo elfldr...", "info");
+        return waitForElfldr(30000);
       })
       .catch(function (e) { log("umtx2 failed: " + e.message, "err"); });
   }
 
-  /* ===== Relapse (in-session) ===== */
   function runRelapse() {
     log("loading Relapse chain (in-session)...", "warn");
     if (!document.getElementById("console")) {
@@ -193,11 +344,11 @@
       })
       .then(function () {
         log("Relapse loaded — exploit started", "success");
+        return waitForElfldr(30000);
       })
       .catch(function (e) { log("Relapse failed: " + e.message, "err"); });
   }
 
-  /* ===== poops/p2jb via hidden iframe (kept for compatibility) ===== */
   function runExt(url, name) {
     log("loading " + name + " chain...", "warn");
     var frame = document.getElementById("extframe");
@@ -210,11 +361,13 @@
         var isErr = d.progress === -1 || (txt && txt.toLowerCase().indexOf("error") >= 0);
         var isSuccess = txt && (txt.toLowerCase().indexOf("success") >= 0 || txt.toLowerCase().indexOf("done") >= 0 || txt.toLowerCase().indexOf("ready") >= 0);
         log(txt || d.bridgeType, isErr ? "err" : isSuccess ? "success" : "info");
+        if (isSuccess && !elfldrReady && window.onFlooderDetected) {
+          window.onFlooderDetected({ source: name });
+        }
       }
     });
   }
 
-  /* ===== FIRMWARE DETECTION ===== */
   var ua = navigator.userAgent;
   var m = /PlayStation 5\/(\d+\.\d+)/.exec(ua);
   var fw = m ? m[1] : "";
@@ -246,7 +399,8 @@
       log("chain: " + name + " — ready", "success");
       jbBtn.className = "";
       jbBtn.onclick = function(){
-        if (armed) { log("jailbreak already running!", "err"); return; }
+        if (armed && !elfldrReady) { log("jailbreak already running!", "err"); return; }
+        if (elfldrReady) { showScreen("payloads"); return; }
         armed = true;
         jbBtn.className = "running";
         jbBtn.textContent = "RUNNING...";
@@ -257,8 +411,6 @@
       };
     }
   }
-
-  log("payload panel removed — Relapse integrated for 7.00–13.60 (in-session)", "info");
 
   if (resume && !armed) {
     log("resuming after reload...", "warn");
